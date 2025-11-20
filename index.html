@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Motto - Share Your Inspiration</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-brown-600: rgba(94, 82, 64, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+            
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+            
+            --color-bg-1: rgba(59, 130, 246, 0.08);
+            --color-bg-2: rgba(245, 158, 11, 0.08);
+            --color-bg-3: rgba(34, 197, 94, 0.08);
+            --color-bg-4: rgba(239, 68, 68, 0.08);
+            --color-bg-5: rgba(147, 51, 234, 0.08);
+            --color-bg-6: rgba(249, 115, 22, 0.08);
+            
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+            --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+            
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-gray-400-rgb: 119, 124, 124;
+                --color-teal-300-rgb: 50, 184, 198;
+                --color-gray-300-rgb: 167, 169, 169;
+                --color-gray-200-rgb: 245, 245, 245;
+                
+                --color-bg-1: rgba(29, 78, 216, 0.15);
+                --color-bg-2: rgba(180, 83, 9, 0.15);
+                --color-bg-3: rgba(21, 128, 61, 0.15);
+                --color-bg-4: rgba(185, 28, 28, 0.15);
+                --color-bg-5: rgba(107, 33, 168, 0.15);
+                --color-bg-6: rgba(194, 65, 12, 0.15);
+                
+                --color-background: var(--color-charcoal-700);
+                --color-surface: var(--color-charcoal-800);
+                --color-text: var(--color-gray-200);
+                --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+                --color-primary: var(--color-teal-300);
+                --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+                --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+                --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+                --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--color-text);
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 16px;
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: var(--color-surface);
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .add-motto-form {
+            background: var(--color-surface);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--color-text);
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            font-size: 14px;
+            font-family: var(--font-family-base);
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: var(--color-text);
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-secondary-hover);
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .motto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .motto-card {
+            background: var(--color-surface);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .motto-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .motto-card.bg-1 { background: var(--color-bg-1); }
+        .motto-card.bg-2 { background: var(--color-bg-2); }
+        .motto-card.bg-3 { background: var(--color-bg-3); }
+        .motto-card.bg-4 { background: var(--color-bg-4); }
+        .motto-card.bg-5 { background: var(--color-bg-5); }
+        .motto-card.bg-6 { background: var(--color-bg-6); }
+
+        .motto-card.has-image {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .motto-card.has-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+            border-radius: var(--radius-lg);
+            z-index: 1;
+        }
+
+        .motto-card.has-image > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .motto-card.has-image .motto-text,
+        .motto-card.has-image .motto-author,
+        .motto-card.has-image .motto-category {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .motto-card.has-image .motto-meta {
+            border-top-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .motto-card.has-image .motto-category {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .motto-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            color: var(--color-text);
+            font-style: italic;
+        }
+
+        .motto-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .motto-author {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .motto-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--color-secondary);
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        .motto-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .like-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            background: var(--color-background);
+            border-radius: var(--radius-base);
+            font-size: 13px;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .like-btn:hover {
+            background: var(--color-secondary);
+        }
+
+        .like-btn.liked {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .motto-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ Daily Motto</h1>
+            <p class="subtitle">Share your inspiration with the world</p>
+        </header>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('explore')">🌍 Explore</button>
+            <button class="tab-btn" onclick="switchTab('add')">➕ Add Motto</button>
+            <button class="tab-btn" onclick="switchTab('my-mottos')">📝 My Mottos</button>
+        </div>
+
+        <!-- Explore Tab -->
+        <div id="explore-tab" class="tab-content active">
+            <div class="filters">
+                <select id="category-filter" onchange="filterMottos()">
+                    <option value="all">All Categories</option>
+                    <option value="funny">😂 Funny</option>
+                    <option value="silly">🤪 Silly</option>
+                    <option value="witty">🧠 Witty</option>
+                    <option value="nonsense">🎪 Nonsense</option>
+                    <option value="sarcastic">😏 Sarcastic</option>
+                    <option value="wholesome">💝 Wholesome</option>
+                    <option value="random">🎲 Random Thoughts</option>
+                </select>
+                <select id="sort-filter" onchange="filterMottos()">
+                    <option value="recent">Most Recent</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+            <div id="motto-grid" class="motto-grid"></div>
+        </div>
+
+        <!-- Add Motto Tab -->
+        <div id="add-tab" class="tab-content">
+            <div class="add-motto-form">
+                <h2 style="margin-bottom: 20px; font-size: 20px;">Share Your Motto</h2>
+                <form id="add-motto-form" onsubmit="addMotto(event)">
+                    <div class="form-group">
+                        <label for="motto-text">Your Motto or Saying *</label>
+                        <textarea id="motto-text" required placeholder="Enter your inspirational motto..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="author-name">Your Name *</label>
+                        <input type="text" id="author-name" required placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" required>
+                            <option value="">Select a category</option>
+                            <option value="funny">😂 Funny</option>
+                            <option value="silly">🤪 Silly</option>
+                            <option value="witty">🧠 Witty</option>
+                            <option value="nonsense">🎪 Nonsense</option>
+                            <option value="sarcastic">😏 Sarcastic</option>
+                            <option value="wholesome">💝 Wholesome</option>
+                            <option value="random">🎲 Random Thoughts</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bg-image">Background Image (Optional)</label>
+                        <input type="url" id="bg-image" placeholder="Enter image URL (e.g., Unsplash, Imgur)">
+                        <small style="display: block; margin-top: 6px; color: var(--color-text-secondary); font-size: 12px;">
+                            💡 Tip: Use <a href="https://unsplash.com" target="_blank" style="color: var(--color-primary);">Unsplash</a> or 
+                            <a href="https://picsum.photos" target="_blank" style="color: var(--color-primary);">Lorem Picsum</a> for free images
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Share Motto</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Mottos Tab -->
+        <div id="my-mottos-tab" class="tab-content">
+            <div id="my-mottos-grid" class="motto-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const mottos = [
+            {
+                id: 1,
+                text: "I'm not lazy, I'm just on energy-saving mode.",
+                author: "Unknown Legend",
+                category: "funny",
+                likes: 42,
+                timestamp: new Date('2024-11-20'),
+                isMine: false,
+                bgImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&auto=format&fit=crop"
+            },
+            {
+                id: 2,
+                text: "I put the 'Pro' in procrastination.",
+                author: "Me, Probably",
+                category: "sarcastic",
+                likes: 38,
+                timestamp: new Date('2024-11-19'),
+                isMine: false
+            },
+            {
+                id: 3,
+                text: "Why fall in love when you can fall asleep?",
+                author: "Anonymous Genius",
+                category: "silly",
+                likes: 56,
+                timestamp: new Date('2024-11-18'),
+                isMine: false,
+                bgImage: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800&auto=format&fit=crop"
+            },
+            {
+                id: 4,
+                text: "I'm not arguing, I'm just explaining why I'm right.",
+                author: "Every Debate Winner",
+                category: "witty",
+                likes: 31,
+                timestamp: new Date('2024-11-17'),
+                isMine: false
+            },
+            {
+                id: 5,
+                text: "My bed is a magical place where I suddenly remember everything I forgot to do.",
+                author: "Night Thinker",
+                category: "random",
+                likes: 45,
+                timestamp: new Date('2024-11-16'),
+                isMine: false
+            },
+            {
+                id: 6,
+                text: "Be yourself. Unless you can be a unicorn. Then be a unicorn.",
+                author: "Unicorn Enthusiast",
+                category: "wholesome",
+                likes: 29,
+                timestamp: new Date('2024-11-15'),
+                isMine: false,
+                bgImage: "https://images.unsplash.com/photo-1527203561188-dae1bc1a417f?w=800&auto=format&fit=crop"
+            },
+            {
+                id: 7,
+                text: "I followed my heart and it led me to the fridge.",
+                author: "Hungry Philosopher",
+                category: "nonsense",
+                likes: 52,
+                timestamp: new Date('2024-11-14'),
+                isMine: false
+            },
+            {
+                id: 8,
+                text: "Coffee: because adulting is hard.",
+                author: "Caffeine Addict",
+                category: "funny",
+                likes: 67,
+                timestamp: new Date('2024-11-13'),
+                isMine: false,
+                bgImage: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&auto=format&fit=crop"
+            }
+        ];
+
+        let likedMottos = new Set();
+        let currentUser = 'Guest';
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            if (tabName === 'my-mottos') {
+                renderMyMottos();
+            } else if (tabName === 'explore') {
+                filterMottos();
+            }
+        }
+
+        function addMotto(event) {
+            event.preventDefault();
+            
+            const text = document.getElementById('motto-text').value.trim();
+            const author = document.getElementById('author-name').value.trim();
+            const category = document.getElementById('category').value;
+            const bgImage = document.getElementById('bg-image').value.trim();
+            
+            if (!text || !author || !category) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const newMotto = {
+                id: Date.now(),
+                text: text,
+                author: author,
+                category: category,
+                likes: 0,
+                timestamp: new Date(),
+                isMine: true,
+                bgImage: bgImage || null
+            };
+            
+            mottos.unshift(newMotto);
+            
+            document.getElementById('add-motto-form').reset();
+            
+            switchTab('explore');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            
+            alert('✨ Your motto has been shared successfully!');
+        }
+
+        function toggleLike(mottoId) {
+            if (likedMottos.has(mottoId)) {
+                likedMottos.delete(mottoId);
+                const motto = mottos.find(m => m.id === mottoId);
+                if (motto) motto.likes--;
+            } else {
+                likedMottos.add(mottoId);
+                const motto = mottos.find(m => m.id === mottoId);
+                if (motto) motto.likes++;
+            }
+            filterMottos();
+        }
+
+        function filterMottos() {
+            const categoryFilter = document.getElementById('category-filter').value;
+            const sortFilter = document.getElementById('sort-filter').value;
+            
+            let filtered = mottos.filter(motto => {
+                if (categoryFilter === 'all') return true;
+                return motto.category === categoryFilter;
+            });
+            
+            if (sortFilter === 'popular') {
+                filtered.sort((a, b) => b.likes - a.likes);
+            } else {
+                filtered.sort((a, b) => b.timestamp - a.timestamp);
+            }
+            
+            renderMottos(filtered, 'motto-grid');
+        }
+
+        function renderMyMottos() {
+            const myMottos = mottos.filter(m => m.isMine);
+            
+            if (myMottos.length === 0) {
+                document.getElementById('my-mottos-grid').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>No mottos yet</h3>
+                        <p>Share your first motto to see it here!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            renderMottos(myMottos, 'my-mottos-grid');
+        }
+
+        function renderMottos(mottosToRender, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (mottosToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h3>No mottos found</h3>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
+            
+            container.innerHTML = mottosToRender.map((motto, index) => {
+                const isLiked = likedMottos.has(motto.id);
+                const bgClass = bgColors[index % bgColors.length];
+                const hasImage = motto.bgImage ? 'has-image' : '';
+                const bgStyle = motto.bgImage ? `style="background-image: url('${motto.bgImage}')"` : '';
+                
+                return `
+                    <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle}>
+                        <div class="motto-text">"${motto.text}"</div>
+                        <div class="motto-meta">
+                            <span class="motto-author">— ${motto.author}</span>
+                            <span class="motto-category">${motto.category}</span>
+                        </div>
+                        <div class="motto-actions">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${motto.id})">
+                                ${isLiked ? '❤️' : '🤍'} ${motto.likes}
+                            </button>
+                            <button class="btn btn-secondary" onclick="shareMotto('${motto.text.replace(/'/g, "\\'")}', '${motto.author}')">
+                                📤 Share
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function shareMotto(text, author) {
+            const shareText = `"${text}" — ${author}\n\nShared via Daily Motto ✨`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Daily Motto',
+                    text: shareText
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Motto copied to clipboard!');
+                });
+            }
+        }
+
+        filterMottos();
+    </script>
+</body>
+</html>
+
