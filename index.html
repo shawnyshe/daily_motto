@@ -621,6 +621,7 @@
                 timestamp: new Date(),
                 isMine: true,
                 bgImage: bgImage || null
+                createdAt: Date.now()   // added: used for display and Firebase
             };
             
             mottos.unshift(newMotto);
@@ -707,12 +708,15 @@
                 const bgClass = bgColors[index % bgColors.length];
                 const hasImage = motto.bgImage ? 'has-image' : '';
                 const bgStyle = motto.bgImage ? `style="background-image: url('${motto.bgImage}')"` : '';
+                const dateObj = motto.createdAt ? new Date(motto.createdAt) : null;
+                const dateLabel = dateObjv ? `${String(dateObj.getDate()).padStart(2, '0')}/${dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase()}/${dateObj.getFullYear()}`: '';
+
                 
                 return `
                     <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle}>
                         <div class="motto-text">"${motto.text}"</div>
                         <div class="motto-meta">
-                            <span class="motto-author">— ${motto.author}</span>
+                            <span class="motto-author">— ${motto.author}${dateLabel ? ' · ' + dateLabel : ''}</span>
                             <span class="motto-category">${motto.category}</span>
                         </div>
                         <div class="motto-actions">
