@@ -494,12 +494,13 @@
                 const cloudMottos = await loadMottosFromCloud();
                 mottos = cloudMottos.map(m => ({
                     ...m,
+                    createdAt: m.createdAt || Date.now(),
                     timestamp: new Date(m.createdAt),
                     isMine: false
                 }));
             } catch (e) {
                 // Fallback to your original demo mottos
-                mottos = demoMottos;
+                mottos = demomottos;
             }
             filterMottos();
         });
@@ -620,7 +621,7 @@
                 likes: 0,
                 timestamp: new Date(),
                 isMine: true,
-                bgImage: bgImage || null
+                bgImage: bgImage || null,
                 createdAt: Date.now()   // added: used for display and Firebase
             };
             
@@ -709,7 +710,7 @@
                 const hasImage = motto.bgImage ? 'has-image' : '';
                 const bgStyle = motto.bgImage ? `style="background-image: url('${motto.bgImage}')"` : '';
                 const dateObj = motto.createdAt ? new Date(motto.createdAt) : null;
-                const dateLabel = dateObjv ? `${String(dateObj.getDate()).padStart(2, '0')}/${dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase()}/${dateObj.getFullYear()}`: '';
+                const dateLabel = dateObj ? `${String(dateObj.getDate()).padStart(2, '0')}/${dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase()}/${dateObj.getFullYear()}`: '';
 
                 
                 return `
