@@ -417,13 +417,13 @@
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('explore')">🌍 Explore</button>
             <button class="tab-btn" onclick="switchTab('add')">➕ Add Motto</button>
-            <button class="tab-btn" onclick="switchTab('my-mottos')">📝 My Mottos</button>
         </div>
 
         <!-- Explore Tab -->
         <div id="explore-tab" class="tab-content active">
             <div class="filters">
-                <select id="category-filter" onchange="filterMottos()">
+                <input type="text" id="search-input" placeholder="🔍 Search mottos or authors..." style="flex: 2; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-base);">
+                <select id="category-filter" onchange="filterMottos()" style="flex: 1;">
                     <option value="all">All Categories</option>
                     <option value="funny">😂 Funny</option>
                     <option value="silly">🤪 Silly</option>
@@ -433,7 +433,7 @@
                     <option value="wholesome">💝 Wholesome</option>
                     <option value="random">🎲 Random Thoughts</option>
                 </select>
-                <select id="sort-filter" onchange="filterMottos()">
+                <select id="sort-filter" onchange="filterMottos()" style="flex: 1;">
                     <option value="recent">Most Recent</option>
                     <option value="popular">Most Popular</option>
                 </select>
@@ -480,10 +480,6 @@
             </div>
         </div>
 
-        <!-- My Mottos Tab -->
-        <div id="my-mottos-tab" class="tab-content">
-            <div id="my-mottos-grid" class="motto-grid"></div>
-        </div>
     </div>
 
     <script>
@@ -593,9 +589,7 @@
             event.target.classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
             
-            if (tabName === 'my-mottos') {
-                renderMyMottos();
-            } else if (tabName === 'explore') {
+            if (tabName === 'explore') {
                 filterMottos();
             }
         }
@@ -654,39 +648,30 @@
         }
 
         function filterMottos() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const categoryFilter = document.getElementById('category-filter').value;
             const sortFilter = document.getElementById('sort-filter').value;
-            
+    
             let filtered = mottos.filter(motto => {
-                if (categoryFilter === 'all') return true;
-                return motto.category === categoryFilter;
+                const matchesSearch = !searchTerm || 
+                    motto.text.toLowerCase().includes(searchTerm) || 
+                    motto.author.toLowerCase().includes(searchTerm);
+                const matchesCategory = categoryFilter === 'all' || motto.category === categoryFilter;
+                return matchesSearch && matchesCategory;
             });
-            
+    
             if (sortFilter === 'popular') {
                 filtered.sort((a, b) => b.likes - a.likes);
             } else {
                 filtered.sort((a, b) => b.timestamp - a.timestamp);
             }
-            
+    
             renderMottos(filtered, 'motto-grid');
         }
-
-        function renderMyMottos() {
-            const myMottos = mottos.filter(m => m.isMine);
-            
-            if (myMottos.length === 0) {
-                document.getElementById('my-mottos-grid').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <h3>No mottos yet</h3>
-                        <p>Share your first motto to see it here!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            renderMottos(myMottos, 'my-mottos-grid');
-        }
+        // Real-time search
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('search-input').addEventListener('input', filterMottos);
+        });
 
         function renderMottos(mottosToRender, containerId) {
             const container = document.getElementById(containerId);
