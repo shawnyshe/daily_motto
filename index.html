@@ -487,7 +487,23 @@
     </div>
 
     <script>
-        const mottos = [
+        let mottos = [];
+        
+        window.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const cloudMottos = await loadMottosFromCloud();
+                mottos = cloudMottos.map(m => ({
+                    ...m,
+                    timestamp: new Date(m.createdAt),
+                    isMine: false
+                }));
+            } catch (e) {
+                // Fallback to your original demo mottos
+                mottos = demoMottos;
+            }
+            filterMottos();
+        });
+        const demomottos = [
             {
                 id: 1,
                 text: "I'm not lazy, I'm just on energy-saving mode.",
@@ -608,12 +624,17 @@
             };
             
             mottos.unshift(newMotto);
-            
+
+            // save to Firebase
+            saveMottoToCloud(newMotto).catch(() => {
+                alert("Cloud save failed, but your motto is visible locally.");
+            });
+
             document.getElementById('add-motto-form').reset();
-            
+
             switchTab('explore');
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            
+
             alert('✨ Your motto has been shared successfully!');
         }
 
@@ -721,8 +742,46 @@
                 });
             }
         }
-
-        filterMottos();
     </script>
+    <!-- Firebase SDKs -->
+<script type="module">
+  // Import the Firebase functions you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { 
+    getFirestore, collection, addDoc, getDocs, query, orderBy 
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  // TODO: replace this config with yours from Firebase console
+  const firebaseConfig = {
+    apiKey: "AIzaSyDWdMKOjJXKjXM_Ey6tsfiPEgxVt5iy1ZU",
+    authDomain: "dailysilly.firebaseapp.com",
+    projectId: "dailysilly",
+    storageBucket: "dailysilly.firebasestorage.app",	
+    messagingSenderId: "819941183720",	
+    appId: "1:819941183720:web:4c0eb7dbe3731bf6b8f95d",	
+    measurementId: "G-5TEH2XY4QR"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const mottosCol = collection(db, "mottos");
+
+  // Expose functions for your existing script
+  window.saveMottoToCloud = async function(motto) {
+    await addDoc(mottosCol, {
+      text: motto.text,
+      author: motto.author,
+      category: motto.category,
+      likes: motto.likes,
+      createdAt: Date.now()
+    });
+  };
+
+  window.loadMottosFromCloud = async function() {
+    const q = query(mottosCol, orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  };
+</script>
 </body>
 </html>
