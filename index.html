@@ -451,7 +451,7 @@
                         <textarea id="motto-text" required placeholder="Enter your inspirational motto..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="feeling-emoji">How are you feeling?</label>
+                        <label for="feeling-emoji">Your Face</label>
                         <select id="feeling-emoji">
                             <option value="">No emoji</option>
                             <!-- Positive -->
@@ -484,9 +484,6 @@
                             <option value="🦄">🦄 Magical</option>
                             <option value="💀">💀 Dead inside (joking)</option>
                         </select>
-                    </div>
-                    <label for="motto-text">Your Motto or Saying *</label>
-                    ...
                     </div>
                     <!-- INSERT EMOJI BLOCK HERE -->
                     <div class="form-group">
@@ -527,12 +524,15 @@
         window.addEventListener("DOMContentLoaded", async () => {
             try {
                 const cloudMottos = await loadMottosFromCloud();
-                mottos = cloudMottos.map(m => ({
-                    ...m,
-                    createdAt: m.createdAt || Date.now(),
-                    timestamp: new Date(m.createdAt),
-                    isMine: false
-                }));
+                mottos = cloudMottos.map(m => {
+                    const created = m.createdAt || Date.now();
+                    return {
+                        ...m,
+                        createdAt: created,
+                        timestamp: new Date(created),
+                        isMine: false
+                    };
+                });
             } catch (e) {
                 // Fallback to your original demo mottos
                 mottos = demomottos;
