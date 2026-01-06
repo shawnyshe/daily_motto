@@ -487,6 +487,17 @@
                     </div>
                     <!-- INSERT EMOJI BLOCK HERE -->
                     <div class="form-group">
+                      <label for="font-choice">Your Font</label>
+                      <select id="font-choice">
+                        <option value="">Default</option>
+                        <option value="'Coming Soon', cursive">Handwritten</option>
+                        <option value="'Quantico', sans-serif">Gamey</option>
+                        <option value="'Bangers', cursive">Loud comic</option>
+                        <option value="'Courier New', monospace">Typewriter</option>
+                        <option value="'Times New Roman', serif">Classic</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
                         <label for="author-name">Your Name *</label>
                         <input type="text" id="author-name" required placeholder="Enter your name">
                     </div>
@@ -641,6 +652,7 @@
             const category = document.getElementById('category').value;
             const bgImage = document.getElementById('bg-image').value.trim();
             const emoji = document.getElementById('feeling-emoji').value;
+            const fontChoice = document.getElementById('font-choice').value;
             
             if (!text || !author || !category) {
                 alert('Please fill in all required fields');
@@ -657,7 +669,8 @@
                 isMine: true,
                 bgImage: bgImage || null,
                 createdAt: Date.now(),   // added: used for display and Firebase
-                emoji: emoji || ""
+                emoji: emoji || "",
+                font: fontChoice || ""
             };
             
             mottos.unshift(newMotto);
@@ -741,7 +754,7 @@
                 
                 return `
                     <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle}>
-                        <div class="motto-text">"${motto.text}"</div>
+                        <div class="motto-text" style="${motto.font ? `font-family: ${motto.font};` : ''}">"${motto.text}"</div>
                         <div class="motto-meta">
                             <span class="motto-author">— ${motto.emoji ? motto.emoji + ' ' : ''}${motto.author}${dateLabel ? ' · ' + dateLabel : ''}</span>
                             <span class="motto-category">${motto.category}</span>
@@ -806,6 +819,7 @@
       likes: motto.likes,
       createdAt: Date.now(),
       emoji: motto.emoji || ""
+      font: motto.font || ""
     });
   };
 
