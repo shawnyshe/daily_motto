@@ -451,6 +451,45 @@
                         <textarea id="motto-text" required placeholder="Enter your inspirational motto..."></textarea>
                     </div>
                     <div class="form-group">
+                        <label for="feeling-emoji">How are you feeling?</label>
+                        <select id="feeling-emoji">
+                            <option value="">No emoji</option>
+                            <!-- Positive -->
+                            <option value="😄">😄 Super happy</option>
+                            <option value="😊">😊 Warm & soft</option>
+                            <option value="😎">😎 Chill</option>
+                            <option value="🤩">🤩 Excited</option>
+                            <option value="🥰">🥰 Loved</option>
+                            <option value="😌">😌 Relaxed</option>
+                            <!-- Silly / Weird -->
+                            <option value="🤡">🤡 Clown mode</option>
+                            <option value="😝">😝 Playful</option>
+                            <option value="🫠">🫠 Melting</option>
+                            <option value="🙃">🙃 Upside down</option>
+                            <!-- Tired / Low energy -->
+                            <option value="😴">😴 Sleepy</option>
+                            <option value="🥱">🥱 Bored</option>
+                            <option value="😮‍💨">😮‍💨 Exhausted</option>
+                            <!-- Stress / Dark humor -->
+                            <option value="😤">😤 Stressed</option>
+                            <option value="😵‍💫">😵‍💫 Overwhelmed</option>
+                            <option value="🤯">🤯 Mind blown</option>
+                            <!-- Thinking / Unsure -->
+                            <option value="🤔">🤔 Thinking</option>
+                            <option value="😬">😬 Awkward</option>
+                            <option value="🤨">🤨 Suspicious</option>
+                            <!-- Random fun -->
+                            <option value="🤠">🤠 Yeehaw</option>
+                            <option value="👻">👻 Ghosty</option>
+                            <option value="🦄">🦄 Magical</option>
+                            <option value="💀">💀 Dead inside (joking)</option>
+                        </select>
+                    </div>
+                    <label for="motto-text">Your Motto or Saying *</label>
+                    ...
+                    </div>
+                    <!-- INSERT EMOJI BLOCK HERE -->
+                    <div class="form-group">
                         <label for="author-name">Your Name *</label>
                         <input type="text" id="author-name" required placeholder="Enter your name">
                     </div>
@@ -601,6 +640,7 @@
             const author = document.getElementById('author-name').value.trim();
             const category = document.getElementById('category').value;
             const bgImage = document.getElementById('bg-image').value.trim();
+            const emoji = document.getElementById('feeling-emoji').value;
             
             if (!text || !author || !category) {
                 alert('Please fill in all required fields');
@@ -616,7 +656,8 @@
                 timestamp: new Date(),
                 isMine: true,
                 bgImage: bgImage || null,
-                createdAt: Date.now()   // added: used for display and Firebase
+                createdAt: Date.now(),   // added: used for display and Firebase
+                emoji: emoji || ""
             };
             
             mottos.unshift(newMotto);
@@ -702,7 +743,7 @@
                     <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle}>
                         <div class="motto-text">"${motto.text}"</div>
                         <div class="motto-meta">
-                            <span class="motto-author">— ${motto.author}${dateLabel ? ' · ' + dateLabel : ''}</span>
+                            <span class="motto-author">— ${motto.emoji ? motto.emoji + ' ' : ''}${motto.author}${dateLabel ? ' · ' + dateLabel : ''}</span>
                             <span class="motto-category">${motto.category}</span>
                         </div>
                         <div class="motto-actions">
@@ -763,7 +804,8 @@
       author: motto.author,
       category: motto.category,
       likes: motto.likes,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      emoji: motto.emoji || ""
     });
   };
 
