@@ -415,8 +415,8 @@
         </header>
 
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('explore')">🌍 Explore</button>
-            <button class="tab-btn" onclick="switchTab('add')">➕ Add Motto</button>
+            <button class="tab-btn active" onclick="switchTab(event, 'explore')">🌍 Explore</button>
+            <button class="tab-btn" onclick="switchTab(event, 'add')">➕ Add Motto</button>
         </div>
 
         <!-- Explore Tab -->
@@ -535,19 +535,16 @@
         window.addEventListener("DOMContentLoaded", async () => {
             try {
                 const cloudMottos = await loadMottosFromCloud();
-                mottos = cloudMottos.map(m => {
-                    const created = m.createdAt || Date.now();
-                    return {
-                        ...m,
-                        createdAt: created,
-                        timestamp: new Date(created),
-                        isMine: false
-                    };
-                });
-            } catch (e) {
-                // Fallback to your original demo mottos
-                mottos = demomottos;
+                // Merge: Keep local + add new cloud
+                const cloudIds = new Set(cloudMottos.map(m => m.id));
+                mottos = [...mottos.filter(m => !cloudIds.has(m.id)), ...cloudMottos].map(m => ({
+                    ...m, createdAt: m.createdAt || Date.now(), timestamp: new Date(m.createdAt || Date.now()), isMine: false
+                }));
+            } catch(e) {
+                console.warn('Cloud failed, using local+demo');
             }
+            localStorage.setItem('dailyMottos', JSON.stringify(mottos));  // Save merged
+            
             filterMottos();
         });
         const demomottos = [
@@ -631,14 +628,24 @@
 
         let likedMottos = new Set();
         let currentUser = 'Guest';
+        // Persistence: Load on startup
+        const loadLocalData = () => {
+          try {
+            const saved = localStorage.getItem('dailyMottos');
+            if (saved) mottos = JSON.parse(saved).map(m => ({...m, timestamp: new Date(m.createdAt || m.timestamp)}));
+            const savedLikes = localStorage.getItem('likedMottos');
+            if (savedLikes) likedMottos = new Set(JSON.parse(savedLikes));
+          } catch(e) {}
+        };
+        loadLocalData();  // Call immediately
 
-        function switchTab(tabName) {
+        function switchTab(event, tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            event.target.classList.add('active');
+    
+            event.target.classList.add('active');  // FIXED: event now passed
             document.getElementById(tabName + '-tab').classList.add('active');
-            
+    
             if (tabName === 'explore') {
                 filterMottos();
             }
@@ -674,6 +681,7 @@
             };
             
             mottos.unshift(newMotto);
+            localStorage.setItem('dailyMottos', JSON.stringify(mottos));
 
             // save to Firebase
             saveMottoToCloud(newMotto).catch(() => {
@@ -698,6 +706,8 @@
                 const motto = mottos.find(m => m.id === mottoId);
                 if (motto) motto.likes++;
             }
+            localStorage.setItem('likedMottos', JSON.stringify(Array.from(likedMottos)));
+            localStorage.setItem('dailyMottos', JSON.stringify(mottos));  // Also save mottos
             filterMottos();
         }
 
@@ -818,7 +828,7 @@
       category: motto.category,
       likes: motto.likes,
       createdAt: Date.now(),
-      emoji: motto.emoji || ""
+      emoji: motto.emoji || "",
       font: motto.font || ""
     });
   };
