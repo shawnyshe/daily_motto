@@ -532,6 +532,9 @@
     <script>
         let mottos = [];
         window.addEventListener("DOMContentLoaded", async () => {
+            if (mottos.length === 0) {
+              mottos = demomottos.map(m => ({...m, createdAt: m.timestamp.getTime()}));
+            }
             loadLocalData();  // MOVED HERE: Load local FIRST
             
             try {
@@ -628,17 +631,40 @@
         ];
 
         let likedMottos = new Set();
+        function dedupeMottos() {
+          const seen = new Set();
+          mottos = mottos.filter(m => {
+            const key = `${m.text}-${m.author}-${m.createdAt}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        }
+
         let currentUser = 'Guest';
         // Persistence: Load on startup
         const loadLocalData = () => {
           try {
             const saved = localStorage.getItem('dailyMottos');
-            if (saved) mottos = JSON.parse(saved).map(m => ({...m, id: Number(m.id), timestamp: new Date(m.createdAt || m.timestamp)}));
+            if (saved) {
+              mottos = JSON.parse(saved).map(m => ({
+                ...m, 
+                id: Number(m.id), 
+                timestamp: new Date(m.createdAt || m.timestamp)
+              }));
+              dedupeMottos();  // KILL DUPES
+            }
             const savedLikes = localStorage.getItem('likedMottos');
-            if (savedLikes) likedMottos = new Set(JSON.parse(savedLikes).map(id => Number(id)));  // PARSE AS NUMBERS;
-          } catch(e) {}
+            if (savedLikes) {
+              likedMottos = new Set(JSON.parse(savedLikes).map(id => Number(id)));
+            }
+          } catch(e) {
+            console.error('Storage corrupt, reset');
+            localStorage.removeItem('dailyMottos');
+            localStorage.removeItem('likedMottos');
+          }
         };
-
+        
         function switchTab(event, tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -689,9 +715,8 @@
             });
 
             document.getElementById('add-motto-form').reset();
-
-            switchTab('explore');
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            // Switch to explore (safe, no dupe)
+            filterMottos();  // Single safe re-render
 
             alert('✨ Your motto has been shared successfully!');
         }
