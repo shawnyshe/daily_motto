@@ -135,7 +135,43 @@
             h1 { font-size: 24px; }
             .filters { flex-direction: column; }
         }
+        /* Paste this at the bottom of your CSS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: zoomIn 0.3s ease;
+        }
+        .capture-container {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-actions {
+            display: flex; gap: 10px; justify-content: center;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
+    <!-- Add this line to load the screenshot tool -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -246,7 +282,19 @@
             </div>
         </div>
     </div>
-
+    <!-- Paste this BEFORE the first <script> tag -->
+    <div id="focus-modal" class="modal-overlay" onclick="closeFocusMode(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="capture-area" class="capture-container">
+                <!-- The motto card will appear here dynamically -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="downloadMottoImage()">📸 Download Image</button>
+                <button class="btn btn-secondary" onclick="closeFocusMode(event, true)">Close</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         let mottos = [];
         const demomottos = [
@@ -347,7 +395,8 @@
             }
         }
 
-        function toggleLike(mottoId) {
+        function toggleLike(event, mottoId) {
+            event.stopPropagation();
             let isLiking = false;
             
             if (likedMottos.has(mottoId)) {
@@ -393,6 +442,48 @@
             renderMottos(filtered, 'motto-grid');
         }
 
+        // --- PASTE THESE NEW FUNCTIONS HERE ---
+        function openFocusMode(event, mottoId) {
+            const motto = mottos.find(m => m.id == mottoId);
+            if (!motto) return;
+        
+            const captureArea = document.getElementById('capture-area');
+            const bgStyle = motto.bgImage ? `style="background-image: url('${motto.bgImage}')"` : '';
+            const safeText = motto.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const fontStyle = motto.font ? `font-family: ${motto.font};` : '';
+        
+            // Create a clean version of the card for the image
+            captureArea.innerHTML = `
+                <div class="motto-card ${motto.bgImage ? 'has-image' : ''} bg-1" ${bgStyle} style="margin:0; border:none; box-shadow:none; ${motto.bgImage ? '' : 'background:var(--color-surface);'}">
+                    <div class="motto-text" style="${fontStyle}; font-size: 22px;">"${safeText}"</div>
+                    <div class="motto-meta">
+                        <span class="motto-author">— ${motto.emoji ? motto.emoji + ' ' : ''}${motto.author}</span>
+                        <span class="motto-category">${motto.category}</span>
+                    </div>
+                    <div style="margin-top:20px; text-align:center; font-size:12px; opacity:0.7;">
+                        Shared via Daily Motto ✨
+                    </div>
+                </div>
+            `;
+            document.getElementById('focus-modal').classList.add('active');
+        }
+        
+        function closeFocusMode(event, force) {
+            if (force || event.target.id === 'focus-modal') {
+                document.getElementById('focus-modal').classList.remove('active');
+            }
+        }
+        
+        function downloadMottoImage() {
+            const element = document.getElementById('capture-area');
+            html2canvas(element, { scale: 2, useCORS: true, backgroundColor: null }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'daily-motto.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => alert('Could not generate image (likely a security restriction with the background image).'));
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search-input').addEventListener('input', filterMottos);
         });
@@ -418,18 +509,18 @@
                 const fontStyle = motto.font ? `font-family: ${motto.font};` : '';
 
                 return `
-                    <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle}>
+                    <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${motto.id}')" style="cursor: pointer;">
                         <div class="motto-text" style="${fontStyle}">"${safeText}"</div>
                         <div class="motto-meta">
                             <span class="motto-author">— ${motto.emoji ? motto.emoji + ' ' : ''}${motto.author}${dateLabel ? ' · ' + dateLabel : ''}</span>
                             <span class="motto-category">${motto.category}</span>
                         </div>
                         <div class="motto-actions">
-                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${motto.id}')">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(event, '${motto.id}')">
                                 ${isLiked ? '❤️' : '🤍'} ${motto.likes}
                             </button>
-                            <button class="btn btn-secondary" onclick="shareMotto('${safeText.replace(/'/g, "\\'")}', '${motto.author}')">
-                                📤 Share
+                            <button class="btn btn-secondary" onclick="openFocusMode(event, '${motto.id}')">
+                                📤 Image
                             </button>
                         </div>
                     </div>
