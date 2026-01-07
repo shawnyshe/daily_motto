@@ -531,22 +531,23 @@
 
     <script>
         let mottos = [];
-        
         window.addEventListener("DOMContentLoaded", async () => {
+            loadLocalData();  // MOVED HERE: Load local FIRST
+            
             try {
                 const cloudMottos = await loadMottosFromCloud();
-                // Merge: Keep local + add new cloud
                 const cloudIds = new Set(cloudMottos.map(m => m.id));
                 mottos = [...mottos.filter(m => !cloudIds.has(m.id)), ...cloudMottos].map(m => ({
-                    ...m, createdAt: m.createdAt || Date.now(), timestamp: new Date(m.createdAt || Date.now()), isMine: false
+                    ...m, createdAt: m.createdAt || Date.now(), 
+                    timestamp: new Date(m.createdAt || Date.now()), isMine: false
                 }));
             } catch(e) {
-                console.warn('Cloud failed, using local+demo');
+                console.warn('Cloud failed, using local');
             }
-            localStorage.setItem('dailyMottos', JSON.stringify(mottos));  // Save merged
-            
+            localStorage.setItem('dailyMottos', JSON.stringify(mottos));
             filterMottos();
         });
+
         const demomottos = [
             {
                 id: 1,
@@ -632,12 +633,11 @@
         const loadLocalData = () => {
           try {
             const saved = localStorage.getItem('dailyMottos');
-            if (saved) mottos = JSON.parse(saved).map(m => ({...m, timestamp: new Date(m.createdAt || m.timestamp)}));
+            if (saved) mottos = JSON.parse(saved).map(m => ({...m, id: Number(m.id), timestamp: new Date(m.createdAt || m.timestamp)}));
             const savedLikes = localStorage.getItem('likedMottos');
-            if (savedLikes) likedMottos = new Set(JSON.parse(savedLikes));
+            if (savedLikes) likedMottos = new Set(JSON.parse(savedLikes).map(id => Number(id)));  // PARSE AS NUMBERS;
           } catch(e) {}
         };
-        loadLocalData();  // Call immediately
 
         function switchTab(event, tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
