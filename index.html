@@ -403,14 +403,42 @@
     <script>
         let currentCategory = 'all'; // Default
         let mottos = [];
+        // Add this helper function at the top of your script
+        function getFormattedDate(motto) {
+            if (!motto.createdAt && !motto.timestamp) return '';
+            const dateObj = new Date(motto.createdAt || motto.timestamp);
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+            const year = dateObj.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
         const demomottos = [
-            { id: 1, text: "I'm not lazy, I'm just on energy-saving mode.", author: "Unknown Legend", category: "funny", likes: 42, timestamp: new Date('2024-11-20'), isMine: false, bgImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&auto=format&fit=crop" },
-            { id: 2, text: "I put the 'Pro' in procrastination.", author: "Me, Probably", category: "cold", likes: 38, timestamp: new Date('2024-11-19'), isMine: false },
-            { id: 3, text: "Why fall in love when you can fall asleep?", author: "Anonymous Genius", category: "silly", likes: 56, timestamp: new Date('2024-11-18'), isMine: false },
-            { id: 4, text: "Be the kind of person your dog thinks you are.", author: "Dog Lover", category: "gold", likes: 67, timestamp: new Date('2024-11-13'), isMine: false },
-            { id: 5, text: "Confidence is silent. Insecurities are loud.", author: "Boss Mode", category: "bold", likes: 88, timestamp: new Date('2024-11-12'), isMine: false, font: "'Bangers', cursive" },
-            { id: 6, text: "I followed my heart and it led me to the fridge.", author: "Hungry", category: "nonsense", likes: 52, timestamp: new Date('2024-11-14'), isMine: false },
-            { id: 7, text: "I'm not arguing, I'm just explaining why I'm right.", author: "Witty One", category: "witty", likes: 30, timestamp: new Date('2024-11-12'), isMine: false }
+            // --- FUNNY (2) ---
+            { id: 1, text: "I'm not lazy, I'm just on energy-saving mode.", author: "Unknown Legend", category: "funny", likes: 142, timestamp: new Date('2024-11-20'), isMine: false, bgImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&auto=format&fit=crop", emoji: "😴" },
+            { id: 2, text: "My bed is a magical place where I suddenly remember everything I forgot to do.", author: "Night Owl", category: "funny", likes: 89, timestamp: new Date('2024-11-15'), isMine: false, emoji: "🛌" },
+
+            // --- SILLY (2) ---
+            { id: 3, text: "Why fall in love when you can fall asleep?", author: "Nap Queen", category: "silly", likes: 56, timestamp: new Date('2024-11-18'), isMine: false, emoji: "💤" },
+            { id: 4, text: "Born to be wild... but only until 9pm or so.", author: "Tired Rebel", category: "silly", likes: 34, timestamp: new Date('2024-11-10'), isMine: false, font: "'Coming Soon', cursive", emoji: "🤠" },
+
+            // --- WITTY (2) ---
+            { id: 5, text: "I'm not arguing, I'm just explaining why I'm right.", author: "Debate Club", category: "witty", likes: 77, timestamp: new Date('2024-11-12'), isMine: false, emoji: "🤓" },
+            { id: 6, text: "Light travels faster than sound. That's why some people appear bright until they speak.", author: "Science Guy", category: "witty", likes: 92, timestamp: new Date('2024-11-08'), isMine: false, font: "'Quantico', sans-serif", emoji: "💡" },
+
+            // --- BOLD (2) ---
+            { id: 7, text: "Confidence is silent. Insecurities are loud.", author: "Boss Mode", category: "bold", likes: 120, timestamp: new Date('2024-11-19'), isMine: false, font: "'Bangers', cursive", emoji: "🦁" },
+            { id: 8, text: "Throw me to the wolves and I'll return leading the pack.", author: "Alpha", category: "bold", likes: 105, timestamp: new Date('2024-11-05'), isMine: false, bgImage: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=800&auto=format&fit=crop", emoji: "🐺" },
+
+            // --- COLD (2) ---
+            { id: 9, text: "I'd agree with you, but then we'd both be wrong.", author: "Savage", category: "cold", likes: 88, timestamp: new Date('2024-11-16'), isMine: false, emoji: "🧊" },
+            { id: 10, text: "My circle is small because I'm into quality, not quantity.", author: "Introvert", category: "cold", likes: 65, timestamp: new Date('2024-11-09'), isMine: false, font: "'Courier New', monospace", emoji: "⭕" },
+
+            // --- GOLD (2) ---
+            { id: 11, text: "Be the kind of person your dog thinks you are.", author: "Dog Lover", category: "gold", likes: 200, timestamp: new Date('2024-11-17'), isMine: false, bgImage: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop", emoji: "🐕" },
+            { id: 12, text: "No rain, no flowers.", author: "Gardener", category: "gold", likes: 150, timestamp: new Date('2024-11-14'), isMine: false, emoji: "🌻" },
+
+            // --- NONSENSE (1 sample) ---
+            { id: 13, text: "The toaster is plotting against the bathtub.", author: "Paranoid Appliance", category: "nonsense", likes: 12, timestamp: new Date('2024-11-11'), isMine: false, emoji: "🍞" }
         ];
 
         let likedMottos = new Set();
@@ -562,17 +590,25 @@
             const motto = mottos.find(m => m.id == mottoId);
             if (!motto) return;
         
+            // 1. Find the index to ensure the background color matches the grid EXACTLY
+            const index = mottos.findIndex(m => m.id == mottoId);
+            const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
+            const bgClass = bgColors[index % bgColors.length];
+        
             const captureArea = document.getElementById('capture-area');
+            const hasImage = motto.bgImage ? 'has-image' : '';
+            // REMOVED the 'background: var(--color-surface)' that was killing the color
             const bgStyle = motto.bgImage ? `style="background-image: url('${motto.bgImage}')"` : '';
             const safeText = motto.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
             const fontStyle = motto.font ? `font-family: ${motto.font};` : '';
+            const dateLabel = getFormattedDate(motto);
         
             // Create a clean version of the card for the image
             captureArea.innerHTML = `
-                <div class="motto-card ${motto.bgImage ? 'has-image' : ''} bg-1" ${bgStyle} style="margin:0; border:none; box-shadow:none; ${motto.bgImage ? '' : 'background:var(--color-surface);'}">
-                    <div class="motto-text" style="${fontStyle}; font-size: 22px;">"${safeText}"</div>
+                <div class="motto-card ${bgClass} ${hasImage}" ${bgStyle} style="margin:0; border:none; box-shadow:none; cursor: default;">
+                    <div class="motto-text" style="${fontStyle}; font-size: 26px;">"${safeText}"</div>
                     <div class="motto-meta">
-                        <span class="motto-author">— ${motto.emoji ? motto.emoji + ' ' : ''}${motto.author}</span>
+                        <span class="motto-author">— ${motto.emoji ? motto.emoji + ' ' : ''}${motto.author} · ${dateLabel}</span>
                         <span class="motto-category">${motto.category}</span>
                     </div>
                     <div style="margin-top:20px; text-align:center; font-size:12px; opacity:0.7;">
@@ -640,16 +676,24 @@
         
             track.innerHTML = loopSet.map((m, index) => {
                 const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                const bgClass = bgColors[index % bgColors.length]; 
+
+                const originalIndex = mottos.findIndex(item => item.id === m.id);
+                const bgClass = bgColors[originalIndex % bgColors.length]; 
+                
                 const hasImage = m.bgImage ? 'has-image' : '';
                 const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
-                // FIX: Ensure font style is applied here too
                 const fontStyle = m.font ? `font-family: ${m.font};` : '';
-                
+                const dateLabel = getFormattedDate(m);
+                    
                 return `
                     <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${m.id}')">
                         <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
-                        <div class="trending-author">— ${m.emoji || ''} ${m.author}</div>
+                        <div class="trending-author" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>— ${m.emoji || ''} ${m.author}</span>
+                                <span style="font-size: 10px; opacity: 0.8;">${dateLabel}</span>
+                            </div>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -671,7 +715,7 @@
                 const hasImage = motto.bgImage ? 'has-image' : '';
                 const bgStyle = motto.bgImage ? `style="background-image: url('${motto.bgImage}')"` : '';
                 const dateObj = motto.createdAt ? new Date(motto.createdAt) : null;
-                const dateLabel = dateObj ? `${String(dateObj.getDate()).padStart(2, '0')}/${dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase()}/${dateObj.getFullYear()}`: '';
+                const dateLabel = getFormattedDate(motto);
                 const safeText = motto.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 const fontStyle = motto.font ? `font-family: ${motto.font};` : '';
 
