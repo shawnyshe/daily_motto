@@ -74,7 +74,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: var(--font-family-base); background: var(--color-background); color: var(--color-text); line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         header { text-align: center; margin-bottom: 32px; padding: 24px 0; border-bottom: 1px solid var(--color-border); }
         h1 { font-family: var(--font-family-handwritten); font-size: 50px; font-weight: 800; margin-bottom: 8px; color: var(--color-text); }
         .subtitle { color: var(--color-text-secondary); font-size: 16px; }
@@ -99,7 +99,7 @@
         .btn-secondary:hover { background: var(--color-secondary-hover); }
         
         .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        .motto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .motto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
         .motto-card { background: var(--color-surface); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--color-card-border); box-shadow: var(--shadow-sm); transition: all 0.3s; position: relative; }
         .motto-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
@@ -169,6 +169,79 @@
             from { transform: scale(0.9); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
+        /* TRENDING MARQUEE STYLES */
+        .trending-banner {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 24px;
+            padding: 10px 0;
+            /* Optional: subtle background to make it stand out */
+            background: linear-gradient(to right, transparent, var(--color-bg-1), transparent);
+            border-radius: var(--radius-lg);
+            position: relative;
+        }
+        
+        .trending-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+            padding-left: 5px;
+        }
+        
+        .trending-track {
+            display: flex;
+            gap: 20px;
+            width: max-content; /* Ensure track is as wide as content */
+            animation: marquee-scroll 30s linear infinite; /* Adjust speed (30s) as needed */
+        }
+        
+        /* Pause and magnify on hover */
+        .trending-track:hover {
+            animation-play-state: paused;
+        }
+        
+        .trending-card {
+            min-width: 220px;
+            max-width: 220px;
+            background: var(--color-surface);
+            padding: 12px;
+            border-radius: var(--radius-base);
+            border: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .trending-card:hover {
+            transform: scale(1.1); /* Magnify effect */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            border-color: var(--color-primary);
+        }
+        
+        .trending-text {
+            font-family: 'Coming Soon', cursive;
+            font-size: 14px;
+            color: var(--color-text);
+            margin-bottom: 8px;
+            /* Limit to 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .trending-author {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+        }
+        
+        @keyframes marquee-scroll {
+            0% { transform: translateX(100%); } /* Start off-screen right */
+            100% { transform: translateX(-100%); } /* End off-screen left */
+        }
     </style>
     <!-- Add this line to load the screenshot tool -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -187,6 +260,17 @@
 
         <!-- Explore Tab -->
         <div id="explore-tab" class="tab-content active">
+            <!-- TRENDING SECTION -->
+            <div id="trending-container" style="display: none;">
+                <div class="trending-label">🔥 Trending: <span id="trending-category-name"></span></div>
+                <div class="trending-banner">
+                    <div id="trending-track" class="trending-track">
+                        <!-- Dynamic Content -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Existing Filters (Keep these here) -->
             <div class="filters">
                 <input type="text" id="search-input" placeholder="🔍 Search mottos or authors..." style="flex: 2; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-base);">
                 <select id="category-filter" onchange="filterMottos()" style="flex: 1;">
@@ -432,7 +516,7 @@
                 const matchesCategory = categoryFilter === 'all' || motto.category === categoryFilter;
                 return matchesSearch && matchesCategory;
             });
-    
+
             if (sortFilter === 'popular') {
                 filtered.sort((a, b) => b.likes - a.likes);
             } else {
@@ -440,9 +524,9 @@
             }
     
             renderMottos(filtered, 'motto-grid');
+            updateTrendingSection(); 
         }
 
-        // --- PASTE THESE NEW FUNCTIONS HERE ---
         function openFocusMode(event, mottoId) {
             const motto = mottos.find(m => m.id == mottoId);
             if (!motto) return;
@@ -487,6 +571,46 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('search-input').addEventListener('input', filterMottos);
         });
+
+        function updateTrendingSection() {
+            if (mottos.length === 0) return;
+        
+            // 1. Calculate the most popular category
+            const categoryCounts = {};
+            mottos.forEach(m => {
+                categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1;
+            });
+        
+            let topCategory = '';
+            let maxCount = 0;
+            
+            for (const [cat, count] of Object.entries(categoryCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    topCategory = cat;
+                }
+            }
+        
+            if (!topCategory) return;
+        
+            // 2. Filter mottos for that category
+            const trendingMottos = mottos.filter(m => m.category === topCategory);
+        
+            // 3. Render
+            const track = document.getElementById('trending-track');
+            document.getElementById('trending-category-name').textContent = topCategory.toUpperCase();
+            document.getElementById('trending-container').style.display = 'block';
+        
+            track.innerHTML = trendingMottos.map(m => {
+                const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                return `
+                    <div class="trending-card" onclick="openFocusMode(event, '${m.id}')">
+                        <div class="trending-text">"${safeText}"</div>
+                        <div class="trending-author">— ${m.author}</div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         function renderMottos(mottosToRender, containerId) {
             const container = document.getElementById(containerId);
