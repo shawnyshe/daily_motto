@@ -80,7 +80,7 @@
         .subtitle { color: var(--color-text-secondary); font-size: 16px; }
         
         .tab-nav { display: flex; gap: 12px; margin-bottom: 24px; background: var(--color-surface); padding: 6px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); }
-        .tab-btn { flex: 1; padding: 10px 16px; border: none; background: transparent; color: var(--color-text-secondary); font-size: 14px; font-weight: 600; font-family: var(--font-family-base); border-radius: var(--radius-base); cursor: pointer; transition: all 0.2s; }
+        .tab-btn { flex: 1; padding: 16px 20px; border: none; background: transparent; color: var(--color-text-secondary); font-size: 18px; font-weight: 800; font-family: var(--font-family-base); border-radius: var(--radius-base); cursor: pointer; transition: all 0.2s; }
         .tab-btn.active { background: var(--color-primary); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -182,7 +182,7 @@
             width: 100%;
             overflow: hidden;
             margin-bottom: 24px;
-            padding: 12px 0;
+            padding: 16px 0;
             /* NEW: Solid light orange background */
             background: #FFF3E0; 
             border-radius: var(--radius-lg);
@@ -195,31 +195,31 @@
         }
         
         .trending-label {
-            font-size: 20px; /* INCREASED FONT SIZE */
+            font-size: 30px; /* INCREASED FONT SIZE */
             font-weight: 800;
             text-transform: uppercase;
             color: var(--color-primary);
-            margin-bottom: 12px;
-            padding-left: 15px;
+            margin-bottom: 16px;
+            padding-left: 20px;
             font-family: var(--font-family-handwritten);
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
         
         .trending-track {
             display: flex;
-            gap: 20px;
+            gap: 24px;
             width: max-content; 
-            animation: marquee-scroll 40s linear infinite;
+            animation: marquee-scroll 60s linear infinite;
         }
         
         .trending-track:hover { animation-play-state: paused; }
         
         .trending-card {
-            min-width: 260px; /* Sized up slightly */
-            max-width: 260px;
+            min-width: 360px; /* Sized up slightly */
+            max-width: 360px;
             /* Default bg, but will be overridden by inline styles */
             background: var(--color-surface);
-            padding: 16px;
+            padding: 20px;
             border-radius: var(--radius-base);
             border: 1px solid var(--color-border);
             cursor: pointer;
@@ -228,13 +228,13 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 120px;
+            min-height: 200px;
         }
         
         .trending-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            z-index: 10;
+            transform: scale(1.25);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            z-index: 100;
             border-color: var(--color-primary);
         }
 
@@ -246,11 +246,11 @@
         }
         
         .trending-text {
-            font-size: 15px;
+            font-size: 20px;
             color: var(--color-text);
             margin-bottom: 8px;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -300,11 +300,12 @@
                 <!-- Set 1: Funny, Silly, Witty -->
                 <button class="cat-btn" onclick="setCategory('funny')" data-tooltip="Funny">😂</button>
                 <button class="cat-btn" onclick="setCategory('silly')" data-tooltip="Silly">🤪</button>
-                <button class="cat-btn" onclick="setCategory('witty')" data-tooltip="Witty">🧠</button>
+                <button class="cat-btn" onclick="setCategory('witty')" data-tooltip="Witty">🤓</button>
+                <button class="cat-btn" onclick="setCategory('nonsense')" data-tooltip="Nonsense">⁉️</button>
                 <!-- Set 2: Bold, Cold, Gold -->
-                <button class="cat-btn" onclick="setCategory('bold')" data-tooltip="Bold">🦁</button>
-                <button class="cat-btn" onclick="setCategory('cold')" data-tooltip="Cold">🧊</button>
-                <button class="cat-btn" onclick="setCategory('gold')" data-tooltip="Gold">✨</button>
+                <button class="cat-btn" onclick="setCategory('bold')" data-tooltip="Bold">🥵</button>
+                <button class="cat-btn" onclick="setCategory('cold')" data-tooltip="Cold">🥶</button>
+                <button class="cat-btn" onclick="setCategory('gold')" data-tooltip="Gold">😮</button>
 
                 <input type="text" id="search-input" placeholder="🔍 Search mottos or authors..." style="flex: 1; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-base); min-width: 200px;">
             </div>
@@ -370,10 +371,11 @@
                             <option value="">Select a category</option>
                             <option value="funny">😂 Funny</option>
                             <option value="silly">🤪 Silly</option>
-                            <option value="witty">🧠 Witty</option>
-                            <option value="bold">🦁 Bold (Confident)</option>
-                            <option value="cold">🧊 Cold (Sarcastic/Cool)</option>
-                            <option value="gold">✨ Gold (Wholesome/Best)</option>
+                            <option value="witty">🤓 Witty</option>
+                            <option value="bold">🥵 Bold (Confident)</option>
+                            <option value="cold">🥶 Cold (Sarcastic/Cool)</option>
+                            <option value="gold">😮 Gold (Wholesome/Best)</option>
+                            <option value="nonsense">⁉️ Nonsense</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -407,7 +409,8 @@
             { id: 3, text: "Why fall in love when you can fall asleep?", author: "Anonymous Genius", category: "silly", likes: 56, timestamp: new Date('2024-11-18'), isMine: false },
             { id: 4, text: "Be the kind of person your dog thinks you are.", author: "Dog Lover", category: "gold", likes: 67, timestamp: new Date('2024-11-13'), isMine: false },
             { id: 5, text: "Confidence is silent. Insecurities are loud.", author: "Boss Mode", category: "bold", likes: 88, timestamp: new Date('2024-11-12'), isMine: false, font: "'Bangers', cursive" },
-            { id: 6, text: "I'm not arguing, I'm just explaining why I'm right.", author: "Witty One", category: "witty", likes: 30, timestamp: new Date('2024-11-12'), isMine: false }
+            { id: 6, text: "I followed my heart and it led me to the fridge.", author: "Hungry", category: "nonsense", likes: 52, timestamp: new Date('2024-11-14'), isMine: false },
+            { id: 7, text: "I'm not arguing, I'm just explaining why I'm right.", author: "Witty One", category: "witty", likes: 30, timestamp: new Date('2024-11-12'), isMine: false }
         ];
 
         let likedMottos = new Set();
@@ -503,16 +506,17 @@
             }
         }
 
-        function toggleLike(event, rawmottoId) {
+        // FIXED: Parameter name matches usage, so clicks work immediately
+        function toggleLike(event, rawMottoId) {
             event.stopPropagation();
+            
             // Ensure ID is always a String for consistent matching
             const mottoId = String(rawMottoId);
             let isLiking = false;
-
+        
             if (likedMottos.has(mottoId)) {
                 // UNLIKE: Remove from set, decrease count
                 likedMottos.delete(mottoId);
-                // Use loose equality (==) to find the motto object regardless of type
                 const motto = mottos.find(m => m.id == mottoId);
                 if (motto) motto.likes--;
                 isLiking = false;
@@ -524,10 +528,12 @@
                 isLiking = true;
             }
             
+            // Save and Refresh
             localStorage.setItem('likedMottos', JSON.stringify(Array.from(likedMottos)));
             localStorage.setItem('dailyMottos', JSON.stringify(mottos));
             filterMottos();
         
+            // Cloud Update
             if(window.updateLikeInCloud) {
                 window.updateLikeInCloud(mottoId, isLiking);
             }
@@ -600,7 +606,6 @@
         function updateTrendingSection() {
             if (mottos.length === 0) return;
         
-            // 1. Calculate the most popular category
             const categoryCounts = {};
             mottos.forEach(m => {
                 categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1;
@@ -618,37 +623,33 @@
         
             if (!topCategory) return;
         
-            // 2. Filter mottos for that category
             const trendingMottos = mottos.filter(m => m.category === topCategory);
-
-            // 3. Make the loop seamless: 
+        
+            // Infinite Loop Logic
             let loopSet = [...trendingMottos];
             while (loopSet.length < 10) { 
                 loopSet = [...loopSet, ...trendingMottos]; 
             }
-            // Double it one last time to ensure smooth 0% to -50% transition
             loopSet = [...loopSet, ...loopSet]; 
             
             const track = document.getElementById('trending-track');
             document.getElementById('trending-category-name').textContent = topCategory.toUpperCase();
             document.getElementById('trending-container').style.display = 'block';
-
-            // Background colors array to cycle through if no image
+        
             const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
-
-            // FIXED: Map over 'loopSet' (not trendingMottos) and added '(m, index)'
+        
             track.innerHTML = loopSet.map((m, index) => {
                 const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        
                 const bgClass = bgColors[index % bgColors.length]; 
                 const hasImage = m.bgImage ? 'has-image' : '';
                 const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
+                // FIX: Ensure font style is applied here too
                 const fontStyle = m.font ? `font-family: ${m.font};` : '';
-             
+                
                 return `
-                    <div class="trending-card" onclick="openFocusMode(event, '${m.id}')">
-                        <div class="trending-text">"${safeText}"</div>
-                        <div class="trending-author">— ${m.author}</div>
+                    <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${m.id}')">
+                        <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
+                        <div class="trending-author">— ${m.emoji || ''} ${m.author}</div>
                     </div>
                 `;
             }).join('');
