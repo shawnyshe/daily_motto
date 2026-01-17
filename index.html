@@ -727,6 +727,72 @@
             animationFrameId = requestAnimationFrame(() => continuouslyUpdateScales(track));
         }
 
+        // --- PASTE THIS MISSING FUNCTION HERE ---
+        function updateTrendingSection() {
+            if (mottos.length === 0) return;
+        
+            const categoryCounts = {};
+            mottos.forEach(m => {
+                categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1;
+            });
+        
+            let topCategory = '';
+            let maxCount = 0;
+            
+            for (const [cat, count] of Object.entries(categoryCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    topCategory = cat;
+                }
+            }
+        
+            if (!topCategory) return;
+        
+            const trendingMottos = mottos.filter(m => m.category === topCategory);
+        
+            // Infinite Loop Logic: Duplicate until we have at least 6 items
+            let loopSet = [...trendingMottos];
+            while (loopSet.length < 6) { 
+                loopSet = [...loopSet, ...trendingMottos]; 
+            }
+            // Double it one last time for safety
+            loopSet = [...loopSet, ...loopSet]; 
+            
+            const track = document.getElementById('trending-track');
+            document.getElementById('trending-category-name').textContent = topCategory.toUpperCase();
+            document.getElementById('trending-container').style.display = 'block';
+        
+            const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
+        
+            track.innerHTML = loopSet.map((m, index) => {
+                const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                
+                // Find ORIGINAL index to match the grid color exactly
+                const originalIndex = mottos.findIndex(item => item.id === m.id);
+                const bgClass = bgColors[originalIndex % bgColors.length]; 
+                
+                const hasImage = m.bgImage ? 'has-image' : '';
+                const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
+                const fontStyle = m.font ? `font-family: ${m.font};` : '';
+                const dateLabel = getFormattedDate(m);
+                    
+                return `
+                    <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${m.id}')">
+                        <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
+                        <div class="trending-author" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>— ${m.emoji || ''} ${m.author}</span>
+                                <span style="font-size: 10px; opacity: 0.8;">${dateLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Start the animation
+            startCarouselLogic(track);
+        }
+
         function renderMottos(mottosToRender, containerId) {
             const container = document.getElementById(containerId);
             
@@ -765,7 +831,6 @@
                     </div>
                 `;
             }).join('');
-            startCarouselLogic(track);
         }
 
         function shareMotto(text, author) {
