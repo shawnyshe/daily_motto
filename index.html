@@ -177,12 +177,12 @@
         .modal-actions { display: flex; gap: 10px; justify-content: center; }
         @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* TRENDING MARQUEE STYLES */
+        /* TRENDING CAROUSEL STYLES */
         .trending-banner {
             width: 100%;
             overflow: hidden;
             margin-bottom: 24px;
-            padding: 16px 0;
+            padding: 40px 0;
             /* NEW: Solid light orange background */
             background: #FFF3E0; 
             border-radius: var(--radius-lg);
@@ -195,11 +195,11 @@
         }
         
         .trending-label {
-            font-size: 30px; /* INCREASED FONT SIZE */
+            font-size: 30px; 
             font-weight: 800;
             text-transform: uppercase;
             color: var(--color-primary);
-            margin-bottom: 16px;
+            margin-bottom: 0px;
             padding-left: 20px;
             font-family: var(--font-family-handwritten);
             letter-spacing: 1.5px;
@@ -208,14 +208,14 @@
         .trending-track {
             display: flex;
             gap: 24px;
-            width: max-content; 
-            animation: marquee-scroll 60s linear infinite;
+            /* Width is calculated in JS, but flex handles layout */
+            padding-left: 24px; /* Initial offset */
+            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth 'Step' motion */
+            align-items: center; /* Centers items vertically so they pop up/down evenly */
         }
         
-        .trending-track:hover { animation-play-state: paused; }
-        
         .trending-card {
-            min-width: 360px; /* Sized up slightly */
+            min-width: 360px; 
             max-width: 360px;
             /* Default bg, but will be overridden by inline styles */
             background: var(--color-surface);
@@ -223,18 +223,31 @@
             border-radius: var(--radius-base);
             border: 1px solid var(--color-border);
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             min-height: 200px;
+
+            /* STATE 1: Default (Not center, not hover) */
+            transform: scale(0.9);
+            opacity: 0.7;
+            transition: all 0.5s ease;
         }
         
+        /* STATE 2: Hover (Little magnification) */
         .trending-card:hover {
-            transform: scale(1.25);
+            transform: scale(1.0);
+            opacity: 0.9;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* STATE 3: Centered (Big magnification - override hover) */
+        .trending-card.centered {
+            transform: scale(1.15) !important;
+            opacity: 1 !important;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            z-index: 100;
+            z-index: 10;
             border-color: var(--color-primary);
         }
 
@@ -639,9 +652,13 @@
             document.getElementById('search-input').addEventListener('input', filterMottos);
         });
 
+        // Global variable to control the loop
+        let trendingInterval;
+        
         function updateTrendingSection() {
             if (mottos.length === 0) return;
         
+            // 1. Logic to find top category (Same as before)
             const categoryCounts = {};
             mottos.forEach(m => {
                 categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1;
@@ -649,42 +666,40 @@
         
             let topCategory = '';
             let maxCount = 0;
-            
             for (const [cat, count] of Object.entries(categoryCounts)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    topCategory = cat;
-                }
+                if (count > maxCount) { maxCount = count; topCategory = cat; }
             }
         
-            if (!topCategory) return;
+            if (!topCategory) {
+                document.getElementById('trending-container').style.display = 'none';
+                return;
+            }
         
             const trendingMottos = mottos.filter(m => m.category === topCategory);
-        
-            // Infinite Loop Logic
+            
+            // 2. Prepare Data: Ensure we have enough cards for a smooth loop
+            // We need at least 5-6 cards to make the rotation look smooth
             let loopSet = [...trendingMottos];
-            while (loopSet.length < 10) { 
+            while (loopSet.length < 6) { 
                 loopSet = [...loopSet, ...trendingMottos]; 
             }
-            loopSet = [...loopSet, ...loopSet]; 
-            
+        
             const track = document.getElementById('trending-track');
             document.getElementById('trending-category-name').textContent = topCategory.toUpperCase();
             document.getElementById('trending-container').style.display = 'block';
         
             const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
         
-            track.innerHTML = loopSet.map((m, index) => {
+            // 3. Render Initial Cards
+            track.innerHTML = loopSet.map((m, loopIndex) => {
                 const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
                 const originalIndex = mottos.findIndex(item => item.id === m.id);
                 const bgClass = bgColors[originalIndex % bgColors.length]; 
-                
                 const hasImage = m.bgImage ? 'has-image' : '';
                 const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
                 const fontStyle = m.font ? `font-family: ${m.font};` : '';
                 const dateLabel = getFormattedDate(m);
-                    
+                
                 return `
                     <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${m.id}')">
                         <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
@@ -697,6 +712,56 @@
                     </div>
                 `;
             }).join('');
+        
+            // 4. Start the "Step-by-Step" Loop
+            startCarouselLogic(track);
+        }
+        
+        function startCarouselLogic(track) {
+            if (trendingInterval) clearInterval(trendingInterval);
+        
+            // Initial highlight
+            updateCenteredCard(track);
+        
+            const stepSize = 384; // Card width (360) + Gap (24)
+            
+            trendingInterval = setInterval(() => {
+                // A. Move the track to the left
+                track.style.transform = `translateX(-${stepSize}px)`;
+                
+                // B. Wait for CSS transition (0.7s) to finish, then shuffle DOM
+                setTimeout(() => {
+                    // 1. Remove transition for instant jump
+                    track.style.transition = 'none';
+                    // 2. Move first item to the very end
+                    track.appendChild(track.firstElementChild);
+                    // 3. Reset transform to 0 (user won't notice because card 2 is now card 1)
+                    track.style.transform = 'translateX(0)';
+                    
+                    // 4. Update the "Centered" highlight
+                    updateCenteredCard(track);
+        
+                    // 5. Restore transition for next step (small delay to ensure DOM updated)
+                    setTimeout(() => {
+                        track.style.transition = 'transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
+                    }, 50);
+                }, 700); // Wait matches CSS transition time
+        
+            }, 3000); // 3 Seconds pause between steps
+        }
+        
+        function updateCenteredCard(track) {
+            // Remove old highlights
+            const cards = track.children;
+            for (let card of cards) card.classList.remove('centered');
+        
+            // On Desktop, the "Center" is roughly the 2nd item (index 1)
+            // On Mobile, it's the 1st item (index 0)
+            const centerIndex = window.innerWidth > 768 ? 1 : 0;
+            
+            if (cards[centerIndex]) {
+                cards[centerIndex].classList.add('centered');
+            }
         }
 
         function renderMottos(mottosToRender, containerId) {
