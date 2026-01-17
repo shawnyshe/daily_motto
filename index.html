@@ -184,14 +184,18 @@
             margin-bottom: 24px;
             padding: 40px 0;
             /* NEW: Solid light orange background */
-            background: #FFF3E0; 
+            background: linear-gradient(to bottom, rgba(255, 243, 224, 0.5), rgba(255, 255, 255, 0));
             border-radius: var(--radius-lg);
             position: relative;
+
+            /* BLUR EDGES: This fades the cards out on the left and right */
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
         
         /* Dark mode override for banner */
         @media (prefers-color-scheme: dark) {
-            .trending-banner { background: #3c2f2f; }
+            .trending-banner { background: linear-gradient(to bottom, rgba(60, 47, 47, 0.5), rgba(0, 0, 0, 0));  }
         }
         
         .trending-label {
@@ -210,8 +214,10 @@
             gap: 24px;
             /* Width is calculated in JS, but flex handles layout */
             padding-left: 24px; /* Initial offset */
-            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth 'Step' motion */
+            transition: transform 1s cubic-bezier(0.2, 0.8, 0.1, 1); /* Smooth 'Step' motion */
             align-items: center; /* Centers items vertically so they pop up/down evenly */
+            transform-style: preserve-3d;
+            will-change: transform;
         }
         
         .trending-card {
@@ -230,27 +236,11 @@
             min-height: 200px;
 
             /* STATE 1: Default (Not center, not hover) */
-            transform: scale(0.9);
-            opacity: 0.7;
-            transition: all 0.5s ease;
+            transform: scale(0.85);
+            opacity: 0.6;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         
-        /* STATE 2: Hover (Little magnification) */
-        .trending-card:hover {
-            transform: scale(1.0);
-            opacity: 0.9;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        /* STATE 3: Centered (Big magnification - override hover) */
-        .trending-card.centered {
-            transform: scale(1.15) !important;
-            opacity: 1 !important;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            z-index: 10;
-            border-color: var(--color-primary);
-        }
-
         /* Ensure trending card text handles image backgrounds correctly */
         .trending-card.has-image .trending-text,
         .trending-card.has-image .trending-author {
@@ -272,11 +262,6 @@
             font-size: 12px;
             color: var(--color-text-secondary);
             font-weight: bold;
-        }
-
-        @keyframes marquee-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); } /* MOVES ONLY 50% for seamless loop */
         }
     </style>
     <!-- Add this line to load the screenshot tool -->
@@ -652,116 +637,94 @@
             document.getElementById('search-input').addEventListener('input', filterMottos);
         });
 
-        // Global variable to control the loop
+        // --- REPLACE THE PREVIOUS CAROUSEL LOGIC WITH THIS ---
+
         let trendingInterval;
-        
-        function updateTrendingSection() {
-            if (mottos.length === 0) return;
-        
-            // 1. Logic to find top category (Same as before)
-            const categoryCounts = {};
-            mottos.forEach(m => {
-                categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1;
-            });
-        
-            let topCategory = '';
-            let maxCount = 0;
-            for (const [cat, count] of Object.entries(categoryCounts)) {
-                if (count > maxCount) { maxCount = count; topCategory = cat; }
-            }
-        
-            if (!topCategory) {
-                document.getElementById('trending-container').style.display = 'none';
-                return;
-            }
-        
-            const trendingMottos = mottos.filter(m => m.category === topCategory);
-            
-            // 2. Prepare Data: Ensure we have enough cards for a smooth loop
-            // We need at least 5-6 cards to make the rotation look smooth
-            let loopSet = [...trendingMottos];
-            while (loopSet.length < 6) { 
-                loopSet = [...loopSet, ...trendingMottos]; 
-            }
-        
-            const track = document.getElementById('trending-track');
-            document.getElementById('trending-category-name').textContent = topCategory.toUpperCase();
-            document.getElementById('trending-container').style.display = 'block';
-        
-            const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
-        
-            // 3. Render Initial Cards
-            track.innerHTML = loopSet.map((m, loopIndex) => {
-                const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                const originalIndex = mottos.findIndex(item => item.id === m.id);
-                const bgClass = bgColors[originalIndex % bgColors.length]; 
-                const hasImage = m.bgImage ? 'has-image' : '';
-                const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
-                const fontStyle = m.font ? `font-family: ${m.font};` : '';
-                const dateLabel = getFormattedDate(m);
-                
-                return `
-                    <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${m.id}')">
-                        <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
-                        <div class="trending-author" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span>— ${m.emoji || ''} ${m.author}</span>
-                                <span style="font-size: 10px; opacity: 0.8;">${dateLabel}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        
-            // 4. Start the "Step-by-Step" Loop
-            startCarouselLogic(track);
-        }
+        let animationFrameId;
         
         function startCarouselLogic(track) {
             if (trendingInterval) clearInterval(trendingInterval);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
         
-            // Initial highlight
-            updateCenteredCard(track);
+            // Start the visual loop that handles the "Growing" effect
+            continuouslyUpdateScales(track);
         
-            const stepSize = 384; // Card width (360) + Gap (24)
+            const cardWidth = 360; 
+            const gap = 24;
+            const stepSize = cardWidth + gap;
             
             trendingInterval = setInterval(() => {
-                // A. Move the track to the left
+                // 1. Move Track Left
                 track.style.transform = `translateX(-${stepSize}px)`;
                 
-                // B. Wait for CSS transition (0.7s) to finish, then shuffle DOM
+                // 2. After movement finishes (1s matches CSS), shuffle the DOM
                 setTimeout(() => {
-                    // 1. Remove transition for instant jump
-                    track.style.transition = 'none';
-                    // 2. Move first item to the very end
-                    track.appendChild(track.firstElementChild);
-                    // 3. Reset transform to 0 (user won't notice because card 2 is now card 1)
-                    track.style.transform = 'translateX(0)';
+                    track.style.transition = 'none'; // Turn off animation to teleport
+                    track.appendChild(track.firstElementChild); // Move first item to back
+                    track.style.transform = 'translateX(0)'; // Teleport back to 0
                     
-                    // 4. Update the "Centered" highlight
-                    updateCenteredCard(track);
+                    // Re-enable animation for next step
+                    // Small delay ensures the browser processes the "none" transition first
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            track.style.transition = 'transform 1s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        });
+                    });
+                }, 1000); // 1000ms = 1s CSS transition time
         
-                    // 5. Restore transition for next step (small delay to ensure DOM updated)
-                    setTimeout(() => {
-                        track.style.transition = 'transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
-                    }, 50);
-                }, 700); // Wait matches CSS transition time
-        
-            }, 3000); // 3 Seconds pause between steps
+            }, 3500); // Wait 3.5 seconds between moves
         }
         
-        function updateCenteredCard(track) {
-            // Remove old highlights
-            const cards = track.children;
-            for (let card of cards) card.classList.remove('centered');
-        
-            // On Desktop, the "Center" is roughly the 2nd item (index 1)
-            // On Mobile, it's the 1st item (index 0)
-            const centerIndex = window.innerWidth > 768 ? 1 : 0;
+        // THIS FUNCTION RUNS 60 TIMES PER SECOND
+        function continuouslyUpdateScales(track) {
+            const banner = track.parentElement;
+            const bannerCenter = banner.getBoundingClientRect().left + (banner.offsetWidth / 2);
             
-            if (cards[centerIndex]) {
-                cards[centerIndex].classList.add('centered');
+            const cards = track.children;
+            
+            for (let card of cards) {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + (cardRect.width / 2);
+                
+                // Calculate distance from center
+                const distance = Math.abs(bannerCenter - cardCenter);
+                
+                // Define the "Zone of Influence" (e.g., 400px around the center)
+                const maxDistance = 400; 
+                
+                if (distance < maxDistance) {
+                    // Math: The closer to 0 distance, the closer to 1.0 influence
+                    const influence = 1 - (distance / maxDistance);
+                    
+                    // Scale: Goes from 0.85 (base) up to 1.15 (max)
+                    // Opacity: Goes from 0.6 (base) up to 1.0 (max)
+                    const scale = 0.85 + (0.3 * influence); 
+                    const opacity = 0.6 + (0.4 * influence);
+                    
+                    card.style.transform = `scale(${scale})`;
+                    card.style.opacity = opacity;
+                    card.style.zIndex = Math.floor(influence * 100); // Ensure center overlaps others
+                    
+                    // Add shadow only when near center
+                    if (influence > 0.8) {
+                        card.style.boxShadow = `0 20px 40px rgba(0,0,0,${0.2 * influence})`;
+                        card.style.borderColor = 'var(--color-primary)';
+                    } else {
+                        card.style.boxShadow = 'none';
+                        card.style.borderColor = 'var(--color-border)';
+                    }
+                } else {
+                    // Reset cards far away
+                    card.style.transform = 'scale(0.85)';
+                    card.style.opacity = '0.6';
+                    card.style.zIndex = '0';
+                    card.style.boxShadow = 'none';
+                    card.style.borderColor = 'var(--color-border)';
+                }
             }
+            
+            // Keep looping
+            animationFrameId = requestAnimationFrame(() => continuouslyUpdateScales(track));
         }
 
         function renderMottos(mottosToRender, containerId) {
@@ -802,6 +765,7 @@
                     </div>
                 `;
             }).join('');
+            startCarouselLogic(track);
         }
 
         function shareMotto(text, author) {
