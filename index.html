@@ -344,7 +344,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>XDXD:) Daily Motto</h1>
+            <h1>:) Daily Motto (:</h1>
             <p class="subtitle">Share your silly sentence of the day with the world</p>
         </header>
 
@@ -364,10 +364,10 @@
                             <!-- Dynamic Content -->
                         </div>
                     </div>
-                    <--new dots container-->
+                    <!-- new dots container -->
                     <div id="trending-dots" class="trending-dots"></div>
                 </div>
-            <div>
+            </div>
 
             <!-- NEW FILTER BAR: Emojis + Search (No Sort Dropdown) -->
             <div class="filters">
@@ -995,22 +995,19 @@
         async function initApp() {
             loadLocalData();
         
-            // FIXED: Force merge Demo Mottos if they are missing (handling old local storage)
-            const existingIds = new Set(mottos.map(m => m.id));
-            let addedDemo = false;
-            
+            // 1. Merge Demo Mottos
+            // We loop through new demos and add them
             demomottos.forEach(demo => {
-                if (!existingIds.has(demo.id)) {
-                    mottos.push(demo);
-                    addedDemo = true;
-                }
+                mottos.push(demo);
             });
+
+            // 2. CRITICAL FIX: Remove duplicates immediately
+            // This compares text+author and keeps only one version
+            dedupeMottos();
         
-            // Re-sort if we added new demos
-            if (addedDemo) {
-                mottos.sort((a, b) => b.timestamp - a.timestamp);
-                localStorage.setItem('dailyMottos', JSON.stringify(mottos));
-            }
+            // 3. Sort and Save
+            mottos.sort((a, b) => b.timestamp - a.timestamp);
+            localStorage.setItem('dailyMottos', JSON.stringify(mottos));
         
             try {
                 if (window.loadMottosFromCloud) {
@@ -1025,6 +1022,7 @@
                 }
             } catch(e) { }
             
+            // Final Save & Render
             localStorage.setItem('dailyMottos', JSON.stringify(mottos));
             filterMottos();
         }
