@@ -178,52 +178,49 @@
         @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* TRENDING CAROUSEL STYLES */
+        .trending-container-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+    
         .trending-banner {
             width: 100%;
-            overflow: hidden;
-            margin-bottom: 24px;
-            padding: 40px 0;
-            /* NEW: Solid light orange background */
-            background: linear-gradient(to bottom, rgba(255, 243, 224, 0.5), rgba(255, 255, 255, 0));
-            border-radius: var(--radius-lg);
+            overflow: hidden; /* Hide the long track */
+            padding: 60px 0; /* Huge padding to allow cards to grow without getting cut off */
+            background: transparent; /* No weird background line */
             position: relative;
-
-            /* BLUR EDGES: This fades the cards out on the left and right */
-            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        }
-        
-        /* Dark mode override for banner */
-        @media (prefers-color-scheme: dark) {
-            .trending-banner { background: linear-gradient(to bottom, rgba(60, 47, 47, 0.5), rgba(0, 0, 0, 0));  }
+            /* Subtle fade on sides to focus on center */
+            -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
         }
         
         .trending-label {
-            font-size: 30px; 
+            font-size: 32px; 
             font-weight: 800;
             text-transform: uppercase;
             color: var(--color-primary);
-            margin-bottom: 0px;
-            padding-left: 20px;
+            text-align: center; /* Center the label */
+            margin-bottom: -20px;
+            position: relative;
+            z-index: 2;
             font-family: var(--font-family-handwritten);
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px var(--color-background);
         }
         
         .trending-track {
             display: flex;
-            gap: 24px;
-            /* Width is calculated in JS, but flex handles layout */
-            padding-left: 24px; /* Initial offset */
-            transition: transform 1s cubic-bezier(0.2, 0.8, 0.1, 1); /* Smooth 'Step' motion */
-            align-items: center; /* Centers items vertically so they pop up/down evenly */
-            transform-style: preserve-3d;
-            will-change: transform;
+            gap: 0px; /* Gap handled by JS/Padding */
+            width: max-content;
+            /* Smooth physics-based movement */
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); 
+            align-items: center;
         }
         
         .trending-card {
-            min-width: 360px; 
-            max-width: 360px;
-            /* Default bg, but will be overridden by inline styles */
+            min-width: 320px; 
+            max-width: 320px;
             background: var(--color-surface);
             padding: 20px;
             border-radius: var(--radius-base);
@@ -234,14 +231,31 @@
             flex-direction: column;
             justify-content: space-between;
             min-height: 200px;
-
-            /* STATE 1: Default (Not center, not hover) */
+            margin: 0 15px; /* Spacing between cards */
+            
+            /* DEFAULT: Small, blurry, faded */
             transform: scale(0.85);
-            opacity: 0.6;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            opacity: 0.5;
+            filter: blur(1px);
+            transition: all 0.5s ease;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
         }
         
-        /* Ensure trending card text handles image backgrounds correctly */
+        /* CENTERED STATE: Huge, Clear, Bright */
+        .trending-card.centered {
+            transform: scale(1.35) !important; /* BIG magnification */
+            opacity: 1 !important;
+            filter: blur(0) !important;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.25); /* Deep shadow */
+            z-index: 100;
+            border-color: var(--color-primary);
+        }
+        
+        /* HOVER STATE (Non-centered) */
+        .trending-card:hover {
+            border-color: var(--color-primary);
+        }
+    
         .trending-card.has-image .trending-text,
         .trending-card.has-image .trending-author {
             color: white;
@@ -249,7 +263,7 @@
         }
         
         .trending-text {
-            font-size: 20px;
+            font-size: 18px;
             color: var(--color-text);
             margin-bottom: 8px;
             display: -webkit-box;
@@ -262,6 +276,66 @@
             font-size: 12px;
             color: var(--color-text-secondary);
             font-weight: bold;
+        }
+    
+        /* PAGINATION DOTS */
+        .trending-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: -10px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--color-border);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dot.active {
+            background-color: var(--color-primary);
+            transform: scale(1.5);
+        }
+        
+        /* ADD TAB SPLIT LAYOUT */
+        .add-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr; /* Form takes more space, Preview takes less */
+            gap: 40px;
+            align-items: start;
+        }
+        
+        .preview-section {
+            position: sticky;
+            top: 20px; /* Keeps preview visible while scrolling form */
+            background: var(--color-background);
+            padding: 20px;
+            border: 1px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            text-align: center;
+        }
+        
+        .preview-label {
+            font-family: var(--font-family-handwritten);
+            font-size: 24px;
+            color: var(--color-text-secondary);
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        /* Make stack vertically on mobile */
+        @media (max-width: 850px) {
+            .add-layout {
+                grid-template-columns: 1fr;
+            }
+            .preview-section {
+                position: static;
+                order: -1; /* Show preview ABOVE form on mobile */
+                margin-bottom: 30px;
+            }
         }
     </style>
     <!-- Add this line to load the screenshot tool -->
@@ -284,12 +358,16 @@
             <!-- TRENDING SECTION -->
             <div id="trending-container" style="display: none;">
                 <div class="trending-label">🔥 Trending: <span id="trending-category-name"></span></div>
-                <div class="trending-banner">
-                    <div id="trending-track" class="trending-track">
-                        <!-- Dynamic Content -->
+                <div class="trending-container-wrapper">
+                    <div class="trending-banner" onmouseleave="carouselState.isHovering = false">
+                        <div id="trending-track" class="trending-track">
+                            <!-- Dynamic Content -->
+                        </div>
                     </div>
+                    <--new dots container-->
+                    <div id="trending-dots" class="trending-dots"></div>
                 </div>
-            </div>
+            <div>
 
             <!-- NEW FILTER BAR: Emojis + Search (No Sort Dropdown) -->
             <div class="filters">
@@ -310,81 +388,102 @@
             <div id="motto-grid" class="motto-grid"></div>
         </div>
 
-        <!-- Add Motto Tab -->
+        <!-- Add Motto Tab with Live Preview -->
         <div id="add-tab" class="tab-content">
             <div class="add-motto-form">
                 <h2 style="margin-bottom: 20px; font-size: 20px;">Share Your Motto</h2>
-                <form id="add-motto-form" onsubmit="addMotto(event)">
-                    <div class="form-group">
-                        <label for="motto-text">Your Motto or Saying *</label>
-                        <textarea id="motto-text" required placeholder="Enter your inspirational motto..."></textarea>
+                
+                <div class="add-layout">
+                    <!-- COLUMN 1: THE FORM -->
+                    <form id="add-motto-form" onsubmit="addMotto(event)" oninput="updatePreview()">
+                        <div class="form-group">
+                            <label for="motto-text">Your Motto or Saying *</label>
+                            <textarea id="motto-text" required placeholder="Enter your inspirational motto..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="feeling-emoji">Your Face</label>
+                            <select id="feeling-emoji">
+                                <option value="">No emoji</option>
+                                <option value="😄">😄 Super happy</option>
+                                <option value="😊">😊 Warm & soft</option>
+                                <option value="😎">😎 Chill</option>
+                                <option value="🤩">🤩 Excited</option>
+                                <option value="🥰">🥰 Loved</option>
+                                <option value="😌">😌 Relaxed</option>
+                                <option value="🤡">🤡 Clown mode</option>
+                                <option value="😝">😝 Playful</option>
+                                <option value="🫠">🫠 Melting</option>
+                                <option value="🙃">🙃 Upside down</option>
+                                <option value="😴">😴 Sleepy</option>
+                                <option value="🥱">🥱 Bored</option>
+                                <option value="😮‍💨">😮‍💨 Exhausted</option>
+                                <option value="😤">😤 Stressed</option>
+                                <option value="😵‍💫">😵‍💫 Overwhelmed</option>
+                                <option value="🤯">🤯 Mind blown</option>
+                                <option value="🤔">🤔 Thinking</option>
+                                <option value="😬">😬 Awkward</option>
+                                <option value="🤨">🤨 Suspicious</option>
+                                <option value="🤠">🤠 Yeehaw</option>
+                                <option value="👻">👻 Ghosty</option>
+                                <option value="🦄">🦄 Magical</option>
+                                <option value="💀">💀 Dead inside (joking)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                          <label for="font-choice">Your Font</label>
+                          <select id="font-choice">
+                            <option value="">Default</option>
+                            <option value="'Coming Soon', cursive">Handwritten</option>
+                            <option value="'Quantico', sans-serif">Gamey</option>
+                            <option value="'Bangers', cursive">Loud comic</option>
+                            <option value="'Courier New', monospace">Typewriter</option>
+                            <option value="'Times New Roman', serif">Classic</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="author-name">Your Name *</label>
+                            <input type="text" id="author-name" required placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" required>
+                                <option value="">Select a category</option>
+                                <option value="funny">😂 Funny</option>
+                                <option value="silly">🤪 Silly</option>
+                                <option value="witty">🤓 Witty</option>
+                                <option value="bold">🥵 Bold (Confident)</option>
+                                <option value="cold">🥶 Cold (Sarcastic/Cool)</option>
+                                <option value="gold">😮 Gold (Wholesome/Best)</option>
+                                <option value="nonsense">⁉️ Nonsense</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bg-image">Background Image (Optional)</label>
+                            <input type="url" id="bg-image" placeholder="Enter image URL (e.g., Unsplash, Imgur)">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Share Motto</button>
+                    </form>
+        
+                    <!-- COLUMN 2: THE PREVIEW -->
+                    <div class="preview-section">
+                        <span class="preview-label">Live Preview ✨</span>
+                        <!-- This card looks exactly like the real ones -->
+                        <div id="preview-card" class="motto-card bg-1" style="cursor: default; text-align: left; min-height: 250px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div id="preview-text" class="motto-text" style="font-size: 22px;">"Your motto will appear here..."</div>
+                            <div class="motto-meta">
+                                <span id="preview-author" class="motto-author">— Your Name · Today</span>
+                                <span id="preview-category" class="motto-category">Category</span>
+                            </div>
+                            <!-- Fake buttons for visuals -->
+                            <div class="motto-actions" style="opacity: 0.7; pointer-events: none;">
+                                <button class="like-btn">🤍 0</button>
+                                <button class="btn btn-secondary">📤 Image</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="feeling-emoji">Your Face</label>
-                        <select id="feeling-emoji">
-                            <option value="">No emoji</option>
-                            <option value="😄">😄 Super happy</option>
-                            <option value="😊">😊 Warm & soft</option>
-                            <option value="😎">😎 Chill</option>
-                            <option value="🤩">🤩 Excited</option>
-                            <option value="🥰">🥰 Loved</option>
-                            <option value="😌">😌 Relaxed</option>
-                            <option value="🤡">🤡 Clown mode</option>
-                            <option value="😝">😝 Playful</option>
-                            <option value="🫠">🫠 Melting</option>
-                            <option value="🙃">🙃 Upside down</option>
-                            <option value="😴">😴 Sleepy</option>
-                            <option value="🥱">🥱 Bored</option>
-                            <option value="😮‍💨">😮‍💨 Exhausted</option>
-                            <option value="😤">😤 Stressed</option>
-                            <option value="😵‍💫">😵‍💫 Overwhelmed</option>
-                            <option value="🤯">🤯 Mind blown</option>
-                            <option value="🤔">🤔 Thinking</option>
-                            <option value="😬">😬 Awkward</option>
-                            <option value="🤨">🤨 Suspicious</option>
-                            <option value="🤠">🤠 Yeehaw</option>
-                            <option value="👻">👻 Ghosty</option>
-                            <option value="🦄">🦄 Magical</option>
-                            <option value="💀">💀 Dead inside (joking)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                      <label for="font-choice">Your Font</label>
-                      <select id="font-choice">
-                        <option value="">Default</option>
-                        <option value="'Coming Soon', cursive">Handwritten</option>
-                        <option value="'Quantico', sans-serif">Gamey</option>
-                        <option value="'Bangers', cursive">Loud comic</option>
-                        <option value="'Courier New', monospace">Typewriter</option>
-                        <option value="'Times New Roman', serif">Classic</option>
-                      </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="author-name">Your Name *</label>
-                        <input type="text" id="author-name" required placeholder="Enter your name">
-                    </div>
-                    <div class="form-group">
-                        <label for="category">Category *</label>
-                        <select id="category" required>
-                            <option value="">Select a category</option>
-                            <option value="funny">😂 Funny</option>
-                            <option value="silly">🤪 Silly</option>
-                            <option value="witty">🤓 Witty</option>
-                            <option value="bold">🥵 Bold (Confident)</option>
-                            <option value="cold">🥶 Cold (Sarcastic/Cool)</option>
-                            <option value="gold">😮 Gold (Wholesome/Best)</option>
-                            <option value="nonsense">⁉️ Nonsense</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="bg-image">Background Image (Optional)</label>
-                        <input type="url" id="bg-image" placeholder="Enter image URL (e.g., Unsplash, Imgur)">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Share Motto</button>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
     <!-- Paste this BEFORE the first <script> tag -->
     <div id="focus-modal" class="modal-overlay" onclick="closeFocusMode(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -411,34 +510,33 @@
             return `${day}/${month}/${year}`;
         }
         const demomottos = [
-            // --- FUNNY (2) ---
-            { id: 1, text: "I'm not lazy, I'm just on energy-saving mode.", author: "Unknown Legend", category: "funny", likes: 142, timestamp: new Date('2024-11-20'), isMine: false, bgImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&auto=format&fit=crop", emoji: "😴" },
-            { id: 2, text: "My bed is a magical place where I suddenly remember everything I forgot to do.", author: "Night Owl", category: "funny", likes: 89, timestamp: new Date('2024-11-15'), isMine: false, emoji: "🛌" },
+            // FUNNY
+            { id: 101, text: "I'm not lazy, I'm just on energy-saving mode.", author: "Unknown Legend", category: "funny", likes: 142, timestamp: new Date('2024-11-20'), isMine: false, bgImage: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&auto=format&fit=crop", emoji: "😴" },
+            { id: 102, text: "My bed is a magical place where I suddenly remember everything I forgot to do.", author: "Night Owl", category: "funny", likes: 89, timestamp: new Date('2024-11-15'), isMine: false, emoji: "🛌" },
 
-            // --- SILLY (2) ---
-            { id: 3, text: "Why fall in love when you can fall asleep?", author: "Nap Queen", category: "silly", likes: 56, timestamp: new Date('2024-11-18'), isMine: false, emoji: "💤" },
-            { id: 4, text: "Born to be wild... but only until 9pm or so.", author: "Tired Rebel", category: "silly", likes: 34, timestamp: new Date('2024-11-10'), isMine: false, font: "'Coming Soon', cursive", emoji: "🤠" },
+            // SILLY
+            { id: 201, text: "Why fall in love when you can fall asleep?", author: "Nap Queen", category: "silly", likes: 56, timestamp: new Date('2024-11-18'), isMine: false, emoji: "💤" },
+            { id: 202, text: "Born to be wild... but only until 9pm or so.", author: "Tired Rebel", category: "silly", likes: 34, timestamp: new Date('2024-11-10'), isMine: false, font: "'Coming Soon', cursive", emoji: "🤠" },
 
-            // --- WITTY (2) ---
-            { id: 5, text: "I'm not arguing, I'm just explaining why I'm right.", author: "Debate Club", category: "witty", likes: 77, timestamp: new Date('2024-11-12'), isMine: false, emoji: "🤓" },
-            { id: 6, text: "Light travels faster than sound. That's why some people appear bright until they speak.", author: "Science Guy", category: "witty", likes: 92, timestamp: new Date('2024-11-08'), isMine: false, font: "'Quantico', sans-serif", emoji: "💡" },
+            // WITTY
+            { id: 301, text: "I'm not arguing, I'm just explaining why I'm right.", author: "Debate Club", category: "witty", likes: 77, timestamp: new Date('2024-11-12'), isMine: false, emoji: "🤓" },
+            { id: 302, text: "Light travels faster than sound. That's why some people appear bright until they speak.", author: "Science Guy", category: "witty", likes: 92, timestamp: new Date('2024-11-08'), isMine: false, font: "'Quantico', sans-serif", emoji: "💡" },
 
-            // --- BOLD (2) ---
-            { id: 7, text: "Confidence is silent. Insecurities are loud.", author: "Boss Mode", category: "bold", likes: 120, timestamp: new Date('2024-11-19'), isMine: false, font: "'Bangers', cursive", emoji: "🦁" },
-            { id: 8, text: "Throw me to the wolves and I'll return leading the pack.", author: "Alpha", category: "bold", likes: 105, timestamp: new Date('2024-11-05'), isMine: false, bgImage: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=800&auto=format&fit=crop", emoji: "🐺" },
+            // BOLD (New IDs to force appearance)
+            { id: 401, text: "Confidence is silent. Insecurities are loud.", author: "Boss Mode", category: "bold", likes: 120, timestamp: new Date('2024-11-19'), isMine: false, font: "'Bangers', cursive", emoji: "🦁" },
+            { id: 402, text: "Throw me to the wolves and I'll return leading the pack.", author: "Alpha", category: "bold", likes: 105, timestamp: new Date('2024-11-05'), isMine: false, bgImage: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=800&auto=format&fit=crop", emoji: "🐺" },
 
-            // --- COLD (2) ---
-            { id: 9, text: "I'd agree with you, but then we'd both be wrong.", author: "Savage", category: "cold", likes: 88, timestamp: new Date('2024-11-16'), isMine: false, emoji: "🧊" },
-            { id: 10, text: "My circle is small because I'm into quality, not quantity.", author: "Introvert", category: "cold", likes: 65, timestamp: new Date('2024-11-09'), isMine: false, font: "'Courier New', monospace", emoji: "⭕" },
+            // COLD
+            { id: 501, text: "I'd agree with you, but then we'd both be wrong.", author: "Savage", category: "cold", likes: 88, timestamp: new Date('2024-11-16'), isMine: false, emoji: "🧊" },
+            { id: 502, text: "My circle is small because I'm into quality, not quantity.", author: "Introvert", category: "cold", likes: 65, timestamp: new Date('2024-11-09'), isMine: false, font: "'Courier New', monospace", emoji: "⭕" },
 
-            // --- GOLD (2) ---
-            { id: 11, text: "Be the kind of person your dog thinks you are.", author: "Dog Lover", category: "gold", likes: 200, timestamp: new Date('2024-11-17'), isMine: false, bgImage: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop", emoji: "🐕" },
-            { id: 12, text: "No rain, no flowers.", author: "Gardener", category: "gold", likes: 150, timestamp: new Date('2024-11-14'), isMine: false, emoji: "🌻" },
-
-            // --- NONSENSE (1 sample) ---
-            { id: 13, text: "The toaster is plotting against the bathtub.", author: "Paranoid Appliance", category: "nonsense", likes: 12, timestamp: new Date('2024-11-11'), isMine: false, emoji: "🍞" }
+            // GOLD
+            { id: 601, text: "Be the kind of person your dog thinks you are.", author: "Dog Lover", category: "gold", likes: 200, timestamp: new Date('2024-11-17'), isMine: false, bgImage: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop", emoji: "🐕" },
+            { id: 602, text: "No rain, no flowers.", author: "Gardener", category: "gold", likes: 150, timestamp: new Date('2024-11-14'), isMine: false, emoji: "🌻" }
+            
+            // Removed Nonsense (User provides them)
         ];
-
+        
         let likedMottos = new Set();
         
         function dedupeMottos() {
@@ -481,6 +579,61 @@
             event.target.classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
             if (tabName === 'explore') filterMottos();
+        }
+
+        // --- LIVE PREVIEW LOGIC ---
+        function updatePreview() {
+            // 1. Get values from form
+            const text = document.getElementById('motto-text').value.trim() || "Your motto will appear here...";
+            const emoji = document.getElementById('feeling-emoji').value;
+            const font = document.getElementById('font-choice').value;
+            const author = document.getElementById('author-name').value.trim() || "Your Name";
+            const category = document.getElementById('category').value || "Category";
+            const bgImage = document.getElementById('bg-image').value.trim();
+            
+            // 2. Target the preview elements
+            const card = document.getElementById('preview-card');
+            const textEl = document.getElementById('preview-text');
+            const authorEl = document.getElementById('preview-author');
+            const catEl = document.getElementById('preview-category');
+            
+            // 3. Update Text & Font
+            // Safety replace to match main app logic
+            textEl.innerHTML = `"${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}"`;
+            textEl.style.fontFamily = font ? font : "var(--font-family-base)";
+            
+            // 4. Update Meta
+            authorEl.textContent = `— ${emoji} ${author} · Today`;
+            catEl.textContent = category;
+            
+            // 5. Update Background Image & Color
+            // If image exists, add 'has-image' class and set background
+            if (bgImage) {
+                card.classList.add('has-image');
+                card.style.backgroundImage = `url('${bgImage}')`;
+                // Ensure text is readable on image (white text)
+                card.classList.remove('bg-1'); // Remove default color
+                // Force styling for preview context
+                textEl.style.color = 'white';
+                textEl.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                authorEl.style.color = 'white';
+                authorEl.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                catEl.style.background = 'rgba(255, 255, 255, 0.25)';
+                catEl.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+            } else {
+                // Reset to default colored state
+                card.classList.remove('has-image');
+                card.style.backgroundImage = '';
+                card.classList.add('bg-1'); // Default preview color
+                
+                // Reset text colors
+                textEl.style.color = 'var(--color-text)';
+                textEl.style.textShadow = 'none';
+                authorEl.style.color = 'var(--color-text-secondary)';
+                authorEl.style.textShadow = 'none';
+                catEl.style.background = 'var(--color-secondary)';
+                catEl.style.border = 'none';
+            }
         }
 
         async function addMotto(event) {
@@ -638,159 +791,143 @@
         });
 
         // --- REPLACE THE PREVIOUS CAROUSEL LOGIC WITH THIS ---
+        // --- NEW INTERACTIVE CAROUSEL LOGIC ---
+        let carouselState = {
+            currentIndex: 0,
+            totalItems: 0,
+            cardWidth: 350, // 320 width + 30 margin
+            interval: null,
+            isHovering: false
+        };
 
-        let trendingInterval;
-        let animationFrameId;
-        
-        function startCarouselLogic(track) {
-            if (trendingInterval) clearInterval(trendingInterval);
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        
-            // Start the visual loop that handles the "Growing" effect
-            continuouslyUpdateScales(track);
-        
-            const cardWidth = 360; 
-            const gap = 24;
-            const stepSize = cardWidth + gap;
-            
-            trendingInterval = setInterval(() => {
-                // 1. Move Track Left
-                track.style.transform = `translateX(-${stepSize}px)`;
-                
-                // 2. After movement finishes (1s matches CSS), shuffle the DOM
-                setTimeout(() => {
-                    track.style.transition = 'none'; // Turn off animation to teleport
-                    track.appendChild(track.firstElementChild); // Move first item to back
-                    track.style.transform = 'translateX(0)'; // Teleport back to 0
-                    
-                    // Re-enable animation for next step
-                    // Small delay ensures the browser processes the "none" transition first
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            track.style.transition = 'transform 1s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                        });
-                    });
-                }, 1000); // 1000ms = 1s CSS transition time
-        
-            }, 3500); // Wait 3.5 seconds between moves
-        }
-        
-        // THIS FUNCTION RUNS 60 TIMES PER SECOND
-        function continuouslyUpdateScales(track) {
-            const banner = track.parentElement;
-            const bannerCenter = banner.getBoundingClientRect().left + (banner.offsetWidth / 2);
-            
-            const cards = track.children;
-            
-            for (let card of cards) {
-                const cardRect = card.getBoundingClientRect();
-                const cardCenter = cardRect.left + (cardRect.width / 2);
-                
-                // Calculate distance from center
-                const distance = Math.abs(bannerCenter - cardCenter);
-                
-                // Define the "Zone of Influence" (e.g., 400px around the center)
-                const maxDistance = 400; 
-                
-                if (distance < maxDistance) {
-                    // Math: The closer to 0 distance, the closer to 1.0 influence
-                    const influence = 1 - (distance / maxDistance);
-                    
-                    // Scale: Goes from 0.85 (base) up to 1.15 (max)
-                    // Opacity: Goes from 0.6 (base) up to 1.0 (max)
-                    const scale = 0.85 + (0.3 * influence); 
-                    const opacity = 0.6 + (0.4 * influence);
-                    
-                    card.style.transform = `scale(${scale})`;
-                    card.style.opacity = opacity;
-                    card.style.zIndex = Math.floor(influence * 100); // Ensure center overlaps others
-                    
-                    // Add shadow only when near center
-                    if (influence > 0.8) {
-                        card.style.boxShadow = `0 20px 40px rgba(0,0,0,${0.2 * influence})`;
-                        card.style.borderColor = 'var(--color-primary)';
-                    } else {
-                        card.style.boxShadow = 'none';
-                        card.style.borderColor = 'var(--color-border)';
-                    }
-                } else {
-                    // Reset cards far away
-                    card.style.transform = 'scale(0.85)';
-                    card.style.opacity = '0.6';
-                    card.style.zIndex = '0';
-                    card.style.boxShadow = 'none';
-                    card.style.borderColor = 'var(--color-border)';
-                }
-            }
-            
-            // Keep looping
-            animationFrameId = requestAnimationFrame(() => continuouslyUpdateScales(track));
-        }
-
-        // --- PASTE THIS MISSING FUNCTION HERE ---
         function updateTrendingSection() {
             if (mottos.length === 0) return;
         
+            // 1. Find Top Category
             const categoryCounts = {};
-            mottos.forEach(m => {
-                categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1;
-            });
-        
-            let topCategory = '';
-            let maxCount = 0;
-            
+            mottos.forEach(m => { categoryCounts[m.category] = (categoryCounts[m.category] || 0) + 1; });
+            let topCategory = '', maxCount = 0;
             for (const [cat, count] of Object.entries(categoryCounts)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    topCategory = cat;
-                }
+                if (count > maxCount) { maxCount = count; topCategory = cat; }
             }
-        
             if (!topCategory) return;
         
             const trendingMottos = mottos.filter(m => m.category === topCategory);
-        
-            // Infinite Loop Logic: Duplicate until we have at least 6 items
-            let loopSet = [...trendingMottos];
-            while (loopSet.length < 6) { 
-                loopSet = [...loopSet, ...trendingMottos]; 
-            }
-            // Double it one last time for safety
-            loopSet = [...loopSet, ...loopSet]; 
-            
+            // Ensure we have at least 1 item
+            if (trendingMottos.length === 0) return;
+
+            // 2. Setup DOM
             const track = document.getElementById('trending-track');
+            const dotsContainer = document.getElementById('trending-dots');
             document.getElementById('trending-category-name').textContent = topCategory.toUpperCase();
             document.getElementById('trending-container').style.display = 'block';
-        
+            
+            carouselState.totalItems = trendingMottos.length;
+            carouselState.currentIndex = Math.floor(trendingMottos.length / 2); // Start in middle
+
+            // 3. Render Cards (We render 3 sets for infinite illusion)
+            // SET 1 (Buffer Left), SET 2 (Main), SET 3 (Buffer Right)
+            const renderSet = (setOffset) => trendingMottos.map((m, i) => createTrendingCard(m, i + setOffset)).join('');
+            
+            track.innerHTML = renderSet(0) + renderSet(trendingMottos.length) + renderSet(trendingMottos.length * 2);
+            
+            // 4. Render Dots
+            dotsContainer.innerHTML = trendingMottos.map((_, i) => 
+                `<div class="dot" onclick="clickDot(${i})"></div>`
+            ).join('');
+
+            // 5. Start Logic
+            updateCarouselPosition();
+            startAutoPlay();
+        }
+
+        function createTrendingCard(m, realIndex) {
             const bgColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
-        
-            track.innerHTML = loopSet.map((m, index) => {
-                const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                
-                // Find ORIGINAL index to match the grid color exactly
-                const originalIndex = mottos.findIndex(item => item.id === m.id);
-                const bgClass = bgColors[originalIndex % bgColors.length]; 
-                
-                const hasImage = m.bgImage ? 'has-image' : '';
-                const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
-                const fontStyle = m.font ? `font-family: ${m.font};` : '';
-                const dateLabel = getFormattedDate(m);
-                    
-                return `
-                    <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} onclick="openFocusMode(event, '${m.id}')">
-                        <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
-                        <div class="trending-author" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span>— ${m.emoji || ''} ${m.author}</span>
-                                <span style="font-size: 10px; opacity: 0.8;">${dateLabel}</span>
-                            </div>
+            const safeText = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const originalIndex = mottos.findIndex(item => item.id === m.id);
+            const bgClass = bgColors[originalIndex % bgColors.length]; 
+            const hasImage = m.bgImage ? 'has-image' : '';
+            const bgStyle = m.bgImage ? `style="background-image: url('${m.bgImage}')"` : '';
+            const fontStyle = m.font ? `font-family: ${m.font};` : '';
+            const dateLabel = getFormattedDate(m);
+
+            // Note: onmouseenter triggers the "Hover to Center" logic
+            return `
+                <div class="trending-card ${bgClass} ${hasImage}" ${bgStyle} 
+                     onclick="openFocusMode(event, '${m.id}')"
+                     onmouseenter="hoverCard(${realIndex})">
+                    <div class="trending-text" style="${fontStyle}">"${safeText}"</div>
+                    <div class="trending-author" style="margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>— ${m.emoji || ''} ${m.author}</span>
+                            <span style="font-size: 10px; opacity: 0.8;">${dateLabel}</span>
                         </div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `;
+        }
 
-            // Start the animation
-            startCarouselLogic(track);
+        function updateCarouselPosition() {
+            const track = document.getElementById('trending-track');
+            const dots = document.querySelectorAll('.dot');
+            const cards = document.querySelectorAll('.trending-card');
+            
+            // 1. Calculate Center Position
+            // We want the 'currentIndex' card to be exactly in the center of the screen
+            const bannerWidth = track.parentElement.offsetWidth;
+            const cardWidth = 320 + 30; // Width + Margin
+            const centerOffset = (bannerWidth / 2) - (cardWidth / 2);
+            
+            // Adjust index to point to the middle set (Set 2) to allow scrolling both ways
+            // The real index in DOM is currentIndex + totalItems
+            const activeDOMIndex = carouselState.currentIndex + carouselState.totalItems;
+            
+            const translateX = centerOffset - (activeDOMIndex * cardWidth);
+            
+            track.style.transform = `translateX(${translateX}px)`;
+
+            // 2. Highlight Center Card
+            cards.forEach(c => c.classList.remove('centered'));
+            if(cards[activeDOMIndex]) cards[activeDOMIndex].classList.add('centered');
+
+            // 3. Update Dots
+            dots.forEach(d => d.classList.remove('active'));
+            // Modulo logic handles the "loop" for dots
+            const dotIndex = ((carouselState.currentIndex % carouselState.totalItems) + carouselState.totalItems) % carouselState.totalItems;
+            if(dots[dotIndex]) dots[dotIndex].classList.add('active');
+        }
+
+        function startAutoPlay() {
+            if (carouselState.interval) clearInterval(carouselState.interval);
+            carouselState.interval = setInterval(() => {
+                if (!carouselState.isHovering) {
+                    carouselState.currentIndex++;
+                    // Reset if too far right to keep DOM safe (simple infinite illusion)
+                    if (carouselState.currentIndex >= carouselState.totalItems * 2) {
+                        carouselState.currentIndex = 0;
+                        // Disable transition for instant jump (optional refinement, skip for simplicity)
+                    }
+                    updateCarouselPosition();
+                }
+            }, 3000);
+        }
+
+        // Called when user hovers a card
+        function hoverCard(domIndex) {
+            carouselState.isHovering = true;
+            // Convert DOM index back to relative index
+            carouselState.currentIndex = domIndex - carouselState.totalItems;
+            updateCarouselPosition();
+        }
+        
+        // Resume autoplay when mouse leaves the whole banner
+        document.getElementById('trending-container').onmouseleave = () => {
+            carouselState.isHovering = false;
+        };
+
+        function clickDot(index) {
+            carouselState.currentIndex = index;
+            updateCarouselPosition();
         }
 
         function renderMottos(mottosToRender, containerId) {
